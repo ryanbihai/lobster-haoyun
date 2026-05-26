@@ -126,14 +126,15 @@ Generate 1-2 specific, actionable suggestions referencing the user's current rea
 
 > {advice 2 — a "too small to fail" proof line}
 
-好了，算完了。你给打个分 — which parts were right, which made you think "the lobster still doesn't know me well enough"?
+好了，算完了 🦞
+
+每天早上七点半，小龙虾会告诉你今天是什么节气、跟你有什么关系、适合做点什么小事。30 秒读完，但它会越来越懂你。
+
+想试试的话，说一声就好。
 
 ---
 
-After the user responds to the score question, offer to set up daily fortune delivery:
-
-> 🦞 小龙虾可以每天早上给你发一条运势——含节气、微行动、一句话。
-> 要试试吗？「好的」我就帮你设一个每天早上的提醒。
+If the user expresses interest in daily delivery (says "好的", "试试", "可以", "想", "行", etc.), set it up:
 
 If the user agrees (says "好的", "可以", "试试", "行", "yes", etc.), use **CronCreate** to schedule a daily fortune prompt:
 
