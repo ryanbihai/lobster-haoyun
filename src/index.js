@@ -17,7 +17,7 @@ import { getLocalCalendar } from "./local-calendar.js";
 import { generateAha, pickGenre, generateMicroAction } from "./cal-templates.js";
 
 const BASE_URL = process.env.OCEANBUS_URL || "https://ai-t.ihaola.com.cn/api/l0";
-const L1_OPENID = process.env.LUCKY_LOBSTER_SVC_OPENID || "ISzLxo_zT18TYrw-P3OCFQ15d02E0xVMPZ5bXIvzIhIGC6ljeS4smAUnZO1e832igtkGsh5fagwxO4a6";
+const L1_OPENID = process.env.LUCKY_LOBSTER_SVC_OPENID || "cOrquik8RuElUIUakY7FAmB3N5gdmXRR1Yg2b-GX3WeezJGSZVVV0fRd7eknILQodV9ATrpM93N4gYyP";
 
 async function main() {
   const action = getArg("--action") || "status";
