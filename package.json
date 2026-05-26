@@ -1,0 +1,18 @@
+{
+  "name": "lucky-lobster",
+  "version": "0.1.0",
+  "description": "龙虾好运势 — Agent based deep personality reading, daily fortune with Chinese almanac",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "status": "node src/index.js --action status",
+    "fortune": "node src/index.js --action fortune"
+  },
+  "dependencies": {
+    "oceanbus": "latest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT-0"
+}

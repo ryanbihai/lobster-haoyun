@@ -1,0 +1,40 @@
+name: lucky-lobster
+title: 龙虾好运势
+version: 0.1.0
+author: ryanbihai
+license: MIT-0
+runtime: node
+entry: src/index.js
+min_openclaw_version: "1.0.0"
+description: >
+  Agent based deep personality reading — 基于用户真实了解的深度人格解读。
+  Zero user input. Agent从记忆/会话/文件中全面分析，输出底色/内心深处/盲区/能量模式/建议。
+  每日运势融合节气黄历，Aha Moment公式创造惊喜感。
+categories:
+  - health-fitness
+  - productivity-tasks
+requires:
+  bins:
+    - node
+  env:
+    - name: OCEANBUS_URL
+      required: false
+      description: OceanBus L0 API base URL
+    - name: LUCKY_LOBSTER_SVC_OPENID
+      required: false
+      description: L1 LuckyLobsterSvc OpenID for calendar/personality enrichment
+os:
+  - macos
+  - linux
+  - windows
+emoji: 🦞
+skillKey: 龙虾好运势
+config:
+  - key: push_enabled
+    type: boolean
+    default: true
+    description: 是否接收个性化推送
+  - key: push_frequency
+    type: number
+    default: 3
+    description: 每日推送上限
