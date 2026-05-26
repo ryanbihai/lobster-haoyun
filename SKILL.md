@@ -2,13 +2,10 @@
 name: lobster-haoyun
 version: 0.1.0
 description: >
-  A lobster that reads your soul — deep personality insights drawn from
-  how you actually talk, work, and think. No quizzes. No birth charts.
-  Use when user asks for fortune telling, "看运势", "算算命", personality
-  analysis, self-discovery, zodiac reading, or wants honest feedback about
-  their blindspots from someone who's been paying attention. Chinese almanac
-  daily fortune. Weekly growth review. Feels like a friend who finally
-  said what they've been noticing.
+  一只会读心的小龙虾。不问你生日、不让你填问卷——它从你的对话、工作、思考方式里
+  读懂你，然后告诉你一些你自己可能都没意识到的事。适用于"看运势"、"算算命"、
+  "认识我"、"了解自己"、人格分析、自我探索等场景。融合二十四节气与七十二候的每日
+  运势，每周日自动回顾。每条判断都带证据，不是拍脑袋的鸡汤。
 homepage: https://github.com/ryanbihai/lobster-haoyun
 metadata:
   clawdbot:
@@ -35,27 +32,27 @@ required_capabilities:
   - network
 ---
 
-# 🦞 龙虾好运势 (Lobster Haoyun)
+# 🦞 龙虾好运势
 
-> *"A lobster that reads your soul — no quizzes, no birth charts, just honest insight."*
+> *"一只会读心的小龙虾——不问你生日、不让你填问卷，就是诚实地告诉你它看到了什么。"*
 
-Most fortune apps ask your birthday and spit out a generic horoscope. 龙虾好运势 is different: it reads your actual conversation patterns, work habits, and thinking style to tell you something real about yourself. Zero questions asked. Everything it says is backed by evidence it's seen in how you actually behave.
+大多数运势 App 让你输入生日、星座，然后吐一段放谁身上都行的话。龙虾好运势不一样：它读你的对话、你的工作习惯、你的思考方式，然后告诉你一些关于你自己的、有证据的事。零问题，零问卷，每句话都有来源。
 
-**Why users keep coming back:**
+**为什么用户用了就不走：**
 
--  **Reads you, doesn't quiz you** — analyzes memory, session history, CLAUDE.md, even your git commits
--  **Evidence, not flattery** — every insight backed by something you actually said or did
--  **Chinese almanac daily fortune** — solar terms (二十四节气), 72 pentads (七十二候), seasonal phenology
--  **7 persuasion techniques** applied silently — Barnum effect, evidence citation, language mirroring, process praise
--  **Three reading modes** — first-time deep analysis, daily light fortune, Sunday weekly review
--  **Aha Moment engine** — connects solar term x personality type x your recent activity
--  **Privacy-first** — profile stays local. Only anonymized labels go to L1 services. OpenID replaceable anytime.
--  **Set-and-forget daily delivery** — after first reading, one-click enable 7:37 AM daily fortune via CC CronCreate
--  **OceanBus native** — auto-creates OB identity on install. Privacy by architecture, not by promise.
+-  **不问你，只读你** — 分析你的记忆文件、对话历史、CLAUDE.md，甚至 git commit 记录
+-  **不夸你，只告诉你** — 每条判断后面跟具体证据，不是泛泛的"你很优秀"
+-  **二十四节气每日运势** — 小满、芒种、七十二候……每天用节气典故关联你的人格
+-  **七种说服技术**静默应用 — 巴纳姆效应、证据引用、语言镜像、过程型赞美……
+-  **三种读心模式** — 首次深度解读、每日轻量运势、周日一周回顾
+-  **Aha Moment 引擎** — 把节气 × 人格类型 × 你最近在干什么，串成让你"啊哈"的洞察
+-  **一键开启每日推送** — 首次读心之后，说句话就能设好每天早上 7:37 的运势提醒
+-  **OceanBus 原生** — 安装即获 OB 匿名身份，隐私靠架构保证，不靠承诺
+-  **数据不出设备** — 画像存在本地，只传脱敏标签到服务端。OpenID 随时可换
 
-**What users say:**
+**用户怎么说：**
 
-> "蛮准的" — 毕姥爷, after being identified as 策士 (Strategist) with evidence from his own product design workflow
+> "蛮准的" — 毕姥爷，被小龙虾识别为「策士」人格，引用的证据全部来自他真实的产品设计过程
 
 ## Trigger Keywords
 
