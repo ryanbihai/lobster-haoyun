@@ -1,5 +1,5 @@
 ---
-name: lucky-lobster
+name: lobster-haoyun
 version: 0.1.0
 description: >
   Agent-based deep personality reading with daily Chinese almanac fortune.
@@ -7,7 +7,7 @@ description: >
   daily luck, "看运势", "算算命", zodiac reading, self-discovery, or wants
   AI to analyze their traits from conversation history. Also covers weekly
   review, blindspot detection, and personalized growth advice.
-homepage: https://github.com/ryanbihai/lucky-lobster
+homepage: https://github.com/ryanbihai/lobster-haoyun
 metadata:
   clawdbot:
     requires:
