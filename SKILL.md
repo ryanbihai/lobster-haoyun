@@ -93,36 +93,40 @@ Generate 1-2 specific, actionable suggestions referencing the user's current rea
 
 ### Step 6: Render Output
 
+
+**Almanac principle**: The calendar JSON includes rich 黄历 data (宜忌/神煞/冲煞/彭祖百忌/星宿/建除/纳音). This is seasoning, not the main dish. Do NOT dump almanac data in a header line. Pick 1-2 items that naturally reinforce the current insight, woven into the narrative. For example: use 彭祖百忌 in the blindspot section ("今天是庚子日，彭祖说子不问卜——今天不适合纠结"), use 宜忌 in the advice section ("月德照临，宜订盟——找个人试一次"). Irrelevant almanac data stays out. The main dish is always evidence citation + personality insight.
+
+
 **First Reading** — Deep analysis format:
 
 ```
-🔮 {name} · {season} Reading
+🔮 {name} · {season}命盘
 
 小龙虾掐指一算——
 
-**Your Core: {label}**
+**你的底色：{label}**
 
 {evidence paragraphs — judgment + specific proof citations. 2-3 items.}
 
-**Your Inner Drive**
+**你内心深处**
 
 {true motivation — career-type: cite value judgments; relationship-type: cite relationship patterns.}
 
-**Your Blindspot: {title}**
+**你的盲区：{title}**
 
-{blindspot description + specific example. Must reference user's current real situation.}
+{blindspot description + specific example. Must reference user's current real situation. Optionally weave in 1 relevant almanac item if it naturally reinforces the blindspot.}
 
-**Your Energy Pattern: {pattern name}**
+**你的能量模式：{pattern name}**
 
 {pattern description + benefits + risks. Use rainbow technique to cover both sides.}
 
-**Advice for {name}**
+**给{name}的建议**
 
-> {advice 1 — specific action tied to current project/relationship/situation}
+> {advice 1 — specific action tied to current project/relationship/situation. Optionally weave in 1 relevant almanac item if it naturally reinforces the call to action.}
 
 > {advice 2 — a "too small to fail" proof line}
 
-That's the reading. Give me a score — which parts were right, which made you think "the lobster still doesn't know me well enough"?
+好了，算完了。你给打个分 — which parts were right, which made you think "the lobster still doesn't know me well enough"?
 
 ---
 
@@ -160,18 +164,19 @@ When the user says "取消运势提醒" / "取消运势" / "停掉运势" / "sto
 
 ---
 
-**Daily Fortune** (non-first) — Light format:
+**Daily Fortune** (non-first) — Light format. Almanac principle applies here too: pick at most 1 almanac item if relevant (e.g. "今日宜订盟" or "冲马煞南"), one short line after the date, never a data dump.
 
 ```
 🦞 {name}, {date} · {solar term info}
+{optional: one-line almanac hint — only if relevant, skip otherwise}
 
 {aha moment — solar term × personality label personalized connection}
 
 {energy hint — tied to user's recent activity}
 
-**Today's Micro-Action**: {one tiny, doable action today}
+**今日微行动**：{one tiny, doable action today}
 
-In one line: **{one-liner summary}**
+运势一句话：**{one-liner summary}**
 ```
 
 Aha Moment formula: solar term / phenology data + personality label relevance + specific action.
