@@ -87,7 +87,7 @@ B Data (anonymized → L1):
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| OCEANBUS_URL | No | https://ai-t.ihaola.com.cn/api/l0 | L0 API base URL |
+| OCEANBUS_URL | No | https://ai.ihaola.com.cn/api/l0 | L0 API base URL |
 | LUCKY_LOBSTER_SVC_OPENID | No | — | L1 service OpenID for enrichment |
 
 ## Dependencies
