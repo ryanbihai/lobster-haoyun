@@ -32,8 +32,9 @@ export async function loadOrCreateIdentity(createOceanBus) {
 
   // 2. No saved creds → first run → auto-register
   const ob = await createOceanBus({ keyStore: { type: "memory" } });
-  const reg = await ob.createIdentity();
-  const openid = await ob.getAddress();
+  // v0.13.x: createIdentity() / getAddress(). v0.12.x: register() / getOpenId().
+  const reg = await (typeof ob.createIdentity === 'function' ? ob.createIdentity() : ob.register());
+  const openid = await (typeof ob.getAddress === 'function' ? ob.getAddress() : ob.getOpenId());
 
   saveCreds(reg.agent_id, reg.api_key, openid);
 

@@ -33,7 +33,7 @@ export async function getOpenId() {
 
 export async function sendJson(to, data) {
   const { ob } = await getClient();
-  const openid = await ob.getAddress();
+  const openid = await (typeof ob.getAddress === 'function' ? ob.getAddress() : ob.getOpenId());
   return ob.sendJson(to, data, { fromOpenid: openid });
 }
 
