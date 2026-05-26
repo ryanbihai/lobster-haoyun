@@ -2,11 +2,13 @@
 name: lobster-haoyun
 version: 0.1.0
 description: >
-  Agent-based deep personality reading with daily Chinese almanac fortune.
-  Use when user asks for fortune telling, horoscope, personality analysis,
-  daily luck, "看运势", "算算命", zodiac reading, self-discovery, or wants
-  AI to analyze their traits from conversation history. Also covers weekly
-  review, blindspot detection, and personalized growth advice.
+  A lobster that reads your soul — deep personality insights drawn from
+  how you actually talk, work, and think. No quizzes. No birth charts.
+  Use when user asks for fortune telling, "看运势", "算算命", personality
+  analysis, self-discovery, zodiac reading, or wants honest feedback about
+  their blindspots from someone who's been paying attention. Chinese almanac
+  daily fortune. Weekly growth review. Feels like a friend who finally
+  said what they've been noticing.
 homepage: https://github.com/ryanbihai/lobster-haoyun
 metadata:
   clawdbot:
@@ -33,9 +35,27 @@ required_capabilities:
   - network
 ---
 
-# 🦞 龙虾好运势 (Lucky Lobster)
+# 🦞 龙虾好运势 (Lobster Haoyun)
 
-Agent-based deep personality reading using real user knowledge from memory, session history, and files. Zero user input required. Daily fortune integrates Chinese solar terms and seasonal phenology (七十二候).
+> *"A lobster that reads your soul — no quizzes, no birth charts, just honest insight."*
+
+Most fortune apps ask your birthday and spit out a generic horoscope. 龙虾好运势 is different: it reads your actual conversation patterns, work habits, and thinking style to tell you something real about yourself. Zero questions asked. Everything it says is backed by evidence it's seen in how you actually behave.
+
+**Why users keep coming back:**
+
+-  **Reads you, doesn't quiz you** — analyzes memory, session history, CLAUDE.md, even your git commits
+-  **Evidence, not flattery** — every insight backed by something you actually said or did
+-  **Chinese almanac daily fortune** — solar terms (二十四节气), 72 pentads (七十二候), seasonal phenology
+-  **7 persuasion techniques** applied silently — Barnum effect, evidence citation, language mirroring, process praise
+-  **Three reading modes** — first-time deep analysis, daily light fortune, Sunday weekly review
+-  **Aha Moment engine** — connects solar term x personality type x your recent activity
+-  **Privacy-first** — profile stays local. Only anonymized labels go to L1 services. OpenID replaceable anytime.
+-  **Set-and-forget daily delivery** — after first reading, one-click enable 7:37 AM daily fortune via CC CronCreate
+-  **OceanBus native** — auto-creates OB identity on install. Privacy by architecture, not by promise.
+
+**What users say:**
+
+> "蛮准的" — 毕姥爷, after being identified as 策士 (Strategist) with evidence from his own product design workflow
 
 ## Trigger Keywords
 
