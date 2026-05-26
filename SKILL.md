@@ -2,9 +2,7 @@
 name: lobster-haoyun
 version: 0.1.0
 description: >
-  装好之后，对 Claude Code 说一句「看运势」。小龙虾会翻你的记忆、对话、文件——不问你
-  任何问题——然后告诉你一些关于你自己的事。每条判断都带证据，不是网上那种放谁身上
-  都行的鸡汤。融合二十四节气与七十二候。每天早上可以自动推送。说"看运势"试试。
+  装好之后，对 Claude Code 说一句「看运势」。小龙虾会对你的运势做出准确的判断。
 homepage: https://github.com/ryanbihai/lobster-haoyun
 metadata:
   clawdbot:
@@ -35,25 +33,11 @@ required_capabilities:
 
 > *说一句「看运势」，剩下的事交给小龙虾。*
 
-你知道那种感觉吗——有人观察了你很久，然后说了一句关于你的话，你不自觉地点了头。
+不看你的星座，不让你选 A/B/C/D。判断你的底色、你的驱动力、你可能的盲区、你的能量模式。
 
-这就是小龙虾在做的事。
+每天可以推送每日运势：今天是什么节气、跟你这个人有什么关系、今天适合做点什么小事。
 
-它不看你的星座，不让你选 A/B/C/D。它翻你的对话记录、你的文档、你的 commit、你的 CLAUDE.md——它一直在旁边看着，只是你让它开口之前，它没说话。然后它告诉你：「你是这样的人，因为我看过你做了这些事。」
-
-每条判断后面跟着具体的证据。不是「你很有领导力」，是「你从市场调研推进到 16 个文件的完整代码实现，一个下午——你不是在犹豫，你是在想清楚了再动手」。
-
----
-
-装了之后说「看运势」就行。第一次会给你一篇比较长的——关于你的底色、你的驱动力、你可能的盲区、你的能量模式。之后每天早上可以自动推一条短的：今天是什么节气、跟你这个人有什么关系、可以试一件什么小事。
-
-周日会自动回顾这一周的变化——「上次说你是布局者，这周看到你开始往执行转了」。
-
-你给它打个分，它就学得更准。
-
----
-
-> *"蛮准的"* — 毕姥爷试了一次。小龙虾说他是「策士」，引用的证据全部来自他真实的产品设计过程。
+周日会自动回顾这一周的变化。
 
 ## Trigger Keywords
 
@@ -145,27 +129,25 @@ That's the reading. Give me a score — which parts were right, which made you t
 After the user responds to the score question, offer to set up daily fortune delivery:
 
 > 🦞 小龙虾可以每天早上给你发一条运势——含节气、微行动、一句话。
-> 不需要装任何东西，CC 自带的定时任务就够了。
 > 要试试吗？「好的」我就帮你设一个每天早上的提醒。
 
 If the user agrees (says "好的", "可以", "试试", "行", "yes", etc.), use **CronCreate** to schedule a daily fortune prompt:
 
 ```
 CronCreate(
-  cron: "37 7 * * *",     // 7:37 AM daily (off-peak minute)
+  cron: "30 7 * * *",     // 7:30 AM daily (off-peak minute)
   prompt: "龙虾运势每日播报——执行 node <skill-path>/src/index.js --action fortune，根据输出的 flow 类型自动选择每日运势或周回顾格式，应用 Aha Moment 公式和体裁选择，输出当日运势。不要问用户任何问题，直接输出运势卡片。",
   recurring: true
 )
+
 ```
 
-Use 7:37 AM (not 7:00 sharp, to avoid peak scheduling collision). Inform the user:
+Use 7:30 AM (not 7:00 sharp, to avoid peak scheduling collision). Inform the user:
 
-> 设好了！每天早上 7:37，小龙虾会准时出现 🦞
+> 设好了！每天早上 7:30，小龙虾会准时出现 🦞
 > 随时说「取消运势提醒」我就停掉它。
 
 When the user says "取消运势提醒" / "取消运势" / "停掉运势" / "stop fortune", use **CronDelete** to remove the daily fortune cron job. Confirm to the user: "运势提醒已取消。随时说「看运势」可以手动查看。"
-```
-
 
 **Persuasion techniques** (apply silently, do not mention):
 1. Barnum effect — open with 1-2 broad but resonant statements
