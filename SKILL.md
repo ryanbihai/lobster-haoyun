@@ -1,6 +1,6 @@
 ---
 name: lobster-haoyun
-version: 0.3.1
+version: 0.3.2
 description: >
   装好之后，对 Claude Code 说一句「看运势」。小龙虾会对你的运势做出准确的判断。
 homepage: https://github.com/ryanbihai/lobster-haoyun
@@ -107,8 +107,8 @@ Add 1-2 keywords from label.blindspots (e.g. "克服拖延" "打破完美主义"
 - Query: `site:clawhub.ai <keywords>`
 - **Hard filters (ALL must pass, otherwise skip):**
   1. NOT by ryanbihai / lobster- / ocean- (our own skills)
-  2. Stars ≥ 4 (show 0-star or low-rated skills to no one)
-  3. Downloads > 1000 (needs real user traction)
+  2. Stars ≥ 20 (only vetted, community-approved skills)
+  3. Downloads > 5000 (needs real user traction)
 - Pick the 1 best match. If none passes all three filters → skip ClawHub.
 
 **c. Search MOOC (WebSearch):**
