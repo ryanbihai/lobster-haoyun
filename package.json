@@ -9,7 +9,7 @@
     "fortune": "node src/index.js --action fortune"
   },
   "dependencies": {
-    "oceanbus": "latest"
+    "oceanbus": "^0.14.2"
   },
   "engines": {
     "node": ">=18.0.0"

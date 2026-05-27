@@ -15,6 +15,7 @@ import { loadHistory, addEntry, getStreak, isSunday, hasTodayReading, getWeekEnt
 import { initPreferences, loadPreferences } from "./preferences.js";
 import { getLocalCalendar } from "./local-calendar.js";
 import { generateAha, pickGenre, generateMicroAction } from "./cal-templates.js";
+import { hasConsent } from "./consent.js";
 
 const BASE_URL = process.env.OCEANBUS_URL || "https://ai-t.ihaola.com.cn/api/l0";
 const L1_OPENID = process.env.LUCKY_LOBSTER_SVC_OPENID || "cOrquik8RuElUIUakY7FAmB3N5gdmXRR1Yg2b-GX3WeezJGSZVVV0fRd7eknILQodV9ATrpM93N4gYyP";
@@ -39,32 +40,29 @@ async function cmdStatus() {
   const { ob, openid, agentId, created } = await getClient();
   const profile = loadProfile();
   const history = loadHistory();
-  const verbose = process.argv.includes("--verbose");
 
-  const result = {
+  console.log(JSON.stringify({
     status: "ok",
-    version: "0.4.0",
+    version: "0.4.2",
+    consent_given: hasConsent(),
     identity: { created_this_session: created },
     profile: { exists: !!profile },
     history: { streak: history.streak, total_entries: history.entries.length },
-  };
-
-  if (verbose) {
-    result.identity.openid = openid;
-    result.identity.agent_id = agentId;
-    if (profile) {
-      result.profile.birthday = profile.birthday;
-      result.profile.city = profile.city;
-      result.profile.gender = profile.gender;
-    }
-    result.history.last_date = history.last_date;
-  }
-
-  console.log(JSON.stringify(result, null, 2));
+  }, null, 2));
 }
 
 // ── Fortune (main flow) ──
 async function cmdFortune() {
+  // Programmatic consent gate — must pass before any processing
+  if (!hasConsent()) {
+    console.log(JSON.stringify({
+      status: "consent_required",
+      message: "First run — explicit user consent required before fortune reading.",
+      _instructions: "Show the consent prompt from SKILL.md Step 0. Wait for user to type 同意/好/yes/ok. After consent, tell the user to say 看运势 again. Never ask for consent twice.",
+    }, null, 2));
+    return;
+  }
+
   await getClient(); // ensure OB identity exists
   const profile = loadProfile();
   const prefs = initPreferences();
