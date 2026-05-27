@@ -1,6 +1,6 @@
 ---
 name: lobster-haoyun
-version: 0.1.0
+version: 0.2.2
 description: >
   装好之后，对 Claude Code 说一句「看运势」。小龙虾会对你的运势做出准确的判断。
 homepage: https://github.com/ryanbihai/lobster-haoyun
