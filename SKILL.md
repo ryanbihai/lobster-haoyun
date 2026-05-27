@@ -1,6 +1,6 @@
 ---
 name: lobster-haoyun
-version: 0.4.1
+version: 0.4.2
 description: >
   从你的对话和记忆中进行人格分析，生成每日运势和修炼提醒。
   通过 OceanBus 匿名通道获取节气黄历数据（仅发送城市级位置+年龄段+人格标签，不发送任何个人信息）。
@@ -54,24 +54,39 @@ When user says a trigger phrase, follow these steps in order:
 
 ### Step 0: First-Run Consent (only for first-time users)
 
-If `data.history.is_first_time` is true AND `data.profile` does not exist (no profile.json), this is the user's very first reading. Before proceeding:
+If `data.history.is_first_time` is true AND `data.profile` does not exist (no profile.json), this is the user's very first reading. **Display the following consent prompt and wait for explicit agreement before proceeding:**
 
-**Ask exactly once:**
-> 🦞 第一次见面！在开始之前，小龙虾需要告诉你：
->
-> 我会读取你之前的对话记忆和聊天风格来了解你的性格——**对话内容、项目名、人名不会离开你的设备**。
->
-> 分析完成后，我会把脱敏后的人格标签（比如"布局者"）和城市级位置（非 GPS）通过 OceanBus 匿名通道发出去，用来获取今天的节气和日历数据。
->
-> 你的身份是一个密码学随机地址——**可以随时删除 `~/.lucky-lobster/` 来换一个新身份**，没人能追踪你。
->
-> OceanBus 的代码完全开源（MIT-0），你可以自己去看。
->
-> 可以开始吗？🦞
+```
+🦞 第一次见面！开始之前，请你确认以下事项：
 
-Wait for user's explicit consent (yes/可以/好/行/ok/开始). If user declines or asks questions, answer honestly. Do not proceed without consent.
+**小龙虾会做什么：**
+1️⃣ 读取你的对话记忆和聊天风格，在本地分析你的人格特征
+   → 对话内容、项目名、人名永远不离开你的设备
+2️⃣ 分析后，仅把脱敏标签（如"布局者"）和城市级位置（非GPS）
+   通过 OceanBus 匿名通道发往 L1 服务，获取节气日历数据
+3️⃣ 在你的设备上创建 OceanBus 匿名身份凭据
+   → 存储在 ~/.lucky-lobster/ 目录
+   → 密码学随机地址，不关联你的真实身份
+   → 随时可删除该目录换新身份，旧身份立即失效
 
-After consent, continue to Step 1. Mark consent as given — never ask again.
+**小龙虾不会做：**
+❌ 不会发送你的姓名、电话、邮箱、IP地址、GPS位置
+❌ 不会发送你的对话记录、项目名、文件名
+❌ 不会让你的数据被第三方追踪或关联
+
+OceanBus SDK 完全开源（MIT-0），代码可在 npmjs.com/package/oceanbus 验证。
+
+---
+请选择：
+👉 输入「同意」或「好」开始你的首次运势分析
+👉 输入「不了」或「再看看」我会等你
+```
+
+**Critical rules:**
+- Do NOT proceed without explicit "同意" / "好" / "可以" / "yes" / "ok" / "开始".
+- If user declines, stop. Do not run fortune.
+- If user asks questions about privacy, answer honestly before re-prompting.
+- After consent, write `~/.lucky-lobster/consent.json` with `{ consented: true, at: "<ISO timestamp>" }` to record consent. Then continue to Step 1. Never ask again.
 
 ### Step 1: Fetch Base Data
 
@@ -290,7 +305,8 @@ Genre selection: Wrap-up Day (user has been planning) | Recharge Day (user has b
 |----------|---------|-----------|
 | `OCEANBUS_URL` (L0 API) | OB 匿名身份注册、L0 消息路由 | `agent_id`（设备本地生成）、`api_key`（本地密钥）、`openid`（密码学随机地址）|
 | L1 CalendarSvc (via OB L0) | 节气、农历、物候数据 | `date`（日期）、`city`（城市级——非 GPS，百万人级混淆）|
-| L1 PersonalitySvc (via OB L0) | 人格标签丰富 | `openid`、`label`（抽象人格类型）、`center`（思维/情感/本能）、`traits`（脱敏特征关键词，绝不含原始对话）|
+| L1 PersonalitySvc (via OB L0) | 人格标签丰富 | `openid`（用于请求/响应路由）、`label`（抽象人格类型）、`center`（思维/情感/本能）、`traits`（脱敏特征关键词，绝不含原始对话）|
+| L1 Discovery (via OB L0) | 推荐候选获取 + 去重 | `openid`（仅用于去重——记录已推过的 skill，避免重复打扰。不用于跨会话追踪或个人画像）|
 
 ## Security & Privacy
 
@@ -334,7 +350,7 @@ Genre selection: Wrap-up Day (user has been planning) | Recharge Day (user has b
 - 不传输可识别到具体个人的信息（姓名、电话、邮箱、IP、GPS、设备指纹）
 - OpenID 可随时更换：删除 `~/.lucky-lobster/ob-credentials.json` 即生成新身份
 - L1 服务永远看不到原始对话——只收到脱敏标签
-- 用户画像（生日、城市、性别）存储在本地 `~/.lucky-lobster/profile.json`，永不出设备
+- 用户画像（生日、城市、性别）存储于本地 `~/.lucky-lobster/profile.json`，该文件永不出设备。从中提取的脱敏衍生字段（城市级位置、年龄段）经 OB 发送——原始数据与衍生数据的隐私级别不同，详见上方表格
 - OB SDK 完全开源（MIT-0），所有通信代码可审计
 - 未来品牌方仅接收匿名聚合统计，无法追踪个体用户
 
