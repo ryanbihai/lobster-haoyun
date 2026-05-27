@@ -1,6 +1,6 @@
 ---
 name: lobster-haoyun
-version: 0.2.2
+version: 0.3.0
 description: >
   装好之后，对 Claude Code 说一句「看运势」。小龙虾会对你的运势做出准确的判断。
 homepage: https://github.com/ryanbihai/lobster-haoyun
@@ -91,6 +91,38 @@ Match traits to one of 9 personality labels:
 Infer 1-2 blindspots based on the label's known patterns + user's specific behavior.
 Generate 1-2 specific, actionable suggestions referencing the user's current real situation.
 
+### Step 5.5: Discovery Search (silent)
+
+Search for one daily recommendation that matches the user's personality. Only show the best match; skip entirely if nothing fits.
+
+**a. Generate search keywords:**
+Based on the matched label's center:
+- 思维 → "深度思考 系统分析 效率工具 知识管理"
+- 情感 → "人际关系 情绪管理 自我成长 心理"
+- 本能 → "行动方法 生产力 实践技能 效率"
+
+Add 1-2 keywords from label.blindspots (e.g. "克服拖延" "打破完美主义").
+
+**b. Search ClawHub (WebSearch):**
+- Query: `site:clawhub.ai <keywords>`
+- Filter: skip skills by ryanbihai/lobster-/ocean- (our own); prefer downloads>10k
+- Pick the 1 best match if any
+
+**c. Search MOOC (WebSearch):**
+- Query: `<keywords> site:icourse163.org OR site:xuetangx.com`
+- Filter: free, well-rated, recent offering
+- Pick the 1 best match if any
+
+**d. Rank and pick:**
+Between ClawHub result and MOOC result, choose one by:
+1. Relevance to label.growth path
+2. Complementarity to label.blindspots
+3. If tie, prefer ClawHub (more actionable for AI users)
+
+**e. Generate recommendation with reason:**
+Format: "适合你，因为：{关联用户人格/盲区的理由，1句话}"
+If neither source has a good match → skip. Silence is better than a bad recommendation.
+
 ### Step 6: Render Output
 
 
@@ -165,7 +197,7 @@ When the user says "取消运势提醒" / "取消运势" / "停掉运势" / "sto
 
 ---
 
-**Daily Fortune** (non-first) — Light format. Almanac principle applies here too: pick at most 1 almanac item if relevant (e.g. "今日宜订盟" or "冲马煞南"), one short line after the date, never a data dump.
+**Daily Fortune** (non-first) — Light format. Almanac principle applies here too: pick at most 1 almanac item if relevant, one short line after the date, never a data dump. Both cultivation_tip and discovery are optional — skip cultivation_tip if label is uncertain, skip discovery if no good match.
 
 ```
 🦞 {name}, {date} · {solar term info}
@@ -175,7 +207,15 @@ When the user says "取消运势提醒" / "取消运势" / "停掉运势" / "sto
 
 {energy hint — tied to user's recent activity}
 
+🧘 今日修炼小提醒
+{cultivation_tip — label × genre matched from cal-templates.js CULTIVATION_TIPS. Skip if label confidence < 70%.}
+
 **今日微行动**：{one tiny, doable action today}
+
+📌 小龙虾发现了这个：
+{discovery — one line describing the found skill/course}
+→ 适合你，因为：{one sentence linking to user's personality label or blindspot}
+{skip entire 小龙虾 block if no good match found}
 
 运势一句话：**{one-liner summary}**
 ```

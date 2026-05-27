@@ -40,7 +40,11 @@ export const DAILY_FORTUNE = `
 
 {energy_hint}
 
+{cultivation_tip}
+
 **今日微行动**：{micro_action}
+
+{discovery}
 
 运势一句话：**{one_liner}**
 `;
