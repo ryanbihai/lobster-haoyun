@@ -1,8 +1,11 @@
 ---
 name: lobster-haoyun
-version: 0.4.0
+version: 0.4.1
 description: >
-  装好之后，对 Claude Code 说一句「看运势」。小龙虾会对你的运势做出准确的判断。
+  从你的对话和记忆中进行人格分析，生成每日运势和修炼提醒。
+  通过 OceanBus 匿名通道获取节气黄历数据（仅发送城市级位置+年龄段+人格标签，不发送任何个人信息）。
+  首次使用会自动创建 OceanBus 匿名身份（可随时更换，不可追踪）。
+  包含每日推送、ClawHub 精选推荐功能。
 homepage: https://github.com/ryanbihai/lobster-haoyun
 metadata:
   clawdbot:
@@ -33,11 +36,11 @@ required_capabilities:
 
 > *说一句「看运势」，剩下的事交给小龙虾。*
 
-不看你的星座，不让你选 A/B/C/D。判断你的底色、你的驱动力、你可能的盲区、你的能量模式。
+不看你的星座，不让你选 A/B/C/D。它从你的对话记录、记忆文件和工作方式中观察你的行为模式，判断你的底色、驱动力、盲区和能量模式。
 
-每天可以推送每日运势：今天是什么节气、跟你这个人有什么关系、今天适合做点什么小事。
+**能力披露**：首次使用时，小龙虾会读取你已有的对话记忆和会话风格进行人格分析。分析结果（人格标签、特征关键词）通过 OceanBus 匿名通道发往 L1 服务获取日历数据——**不发送你的名字、项目名、对话内容或任何能识别到你个人的信息**。详见 [Security & Privacy](#security--privacy)。
 
-周日会自动回顾这一周的变化。
+每天可以推送每日运势：今天是什么节气、跟你这个人有什么关系、今天适合做点什么小事。周日会自动回顾这一周的变化。
 
 ## Trigger Keywords
 
@@ -48,6 +51,27 @@ required_capabilities:
 ## Execution Flow
 
 When user says a trigger phrase, follow these steps in order:
+
+### Step 0: First-Run Consent (only for first-time users)
+
+If `data.history.is_first_time` is true AND `data.profile` does not exist (no profile.json), this is the user's very first reading. Before proceeding:
+
+**Ask exactly once:**
+> 🦞 第一次见面！在开始之前，小龙虾需要告诉你：
+>
+> 我会读取你之前的对话记忆和聊天风格来了解你的性格——**对话内容、项目名、人名不会离开你的设备**。
+>
+> 分析完成后，我会把脱敏后的人格标签（比如"布局者"）和城市级位置（非 GPS）通过 OceanBus 匿名通道发出去，用来获取今天的节气和日历数据。
+>
+> 你的身份是一个密码学随机地址——**可以随时删除 `~/.lucky-lobster/` 来换一个新身份**，没人能追踪你。
+>
+> OceanBus 的代码完全开源（MIT-0），你可以自己去看。
+>
+> 可以开始吗？🦞
+
+Wait for user's explicit consent (yes/可以/好/行/ok/开始). If user declines or asks questions, answer honestly. Do not proceed without consent.
+
+After consent, continue to Step 1. Mark consent as given — never ask again.
 
 ### Step 1: Fetch Base Data
 
@@ -260,40 +284,71 @@ Genre selection: Wrap-up Day (user has been planning) | Recharge Day (user has b
 
 ## External Endpoints
 
+所有通信均通过 OceanBus L0 消息通道。不调用外部 HTTP API，不存储 API 密钥。
+
 | Endpoint | Purpose | Data Sent |
 |----------|---------|-----------|
-| `OCEANBUS_URL` (L0 API) | OB identity registration, L0 messaging | `agent_id`, `api_key`, `openid`, message payloads |
-| L1 CalendarSvc (via OB L0) | Solar term, lunar calendar, seasonal phenology | `date`, `city` (city-level only, not GPS) |
-| L1 PersonalitySvc (via OB L0) | Personality label enrichment | `openid`, `label`, `center`, `traits` (anonymized keywords only, never raw conversation) |
-
-No external HTTP APIs are called. All communication goes through OceanBus L0 message channel. No API keys are stored in the skill.
+| `OCEANBUS_URL` (L0 API) | OB 匿名身份注册、L0 消息路由 | `agent_id`（设备本地生成）、`api_key`（本地密钥）、`openid`（密码学随机地址）|
+| L1 CalendarSvc (via OB L0) | 节气、农历、物候数据 | `date`（日期）、`city`（城市级——非 GPS，百万人级混淆）|
+| L1 PersonalitySvc (via OB L0) | 人格标签丰富 | `openid`、`label`（抽象人格类型）、`center`（思维/情感/本能）、`traits`（脱敏特征关键词，绝不含原始对话）|
 
 ## Security & Privacy
 
-**What stays on your device (never leaves):**
-- Full conversation content (specific projects, names, company names)
-- Memory files (roles, preferences, feedback)
-- Loaded file contents
-- Detailed behavior patterns
-- Emotional states
+### OceanBus OpenID 机制（为什么比 HTTPS 更安全）
 
-**What is transmitted (anonymized, via OB L0):**
-- Personality label ("布局者") and center type
-- Trait keywords (e.g., ["systematic thinking", "independent decision-making"])
-- City-level location (millions-level anonymity set)
-- Age range and gender
-- OpenID (anonymous, replaceable at any time)
+传统 HTTPS 方案下，服务端管理员可以读取用户数据——隐私靠公司良心。OceanBus 从架构上解决了这个问题：
 
-**Privacy guarantees:**
-- No PII ever leaves the device
-- OpenID is anonymous and user-replaceable
-- L1 services never see raw conversation data
-- Brand partners (future) only receive anonymous aggregate statistics
-- User profile (birthday, city, gender) stored locally at `~/.lucky-lobster/profile.json`
+| 维度 | HTTPS 方案 | OceanBus 方案 |
+|------|-----------|--------------|
+| **用户身份** | IP + 设备指纹 → 可关联到人 | 密码学随机 OpenID → 不可反向识别 |
+| **OpenID 更换** | 不可能（账号绑定） | **随时可换**——删除 `~/.lucky-lobster/` 即生成新身份 |
+| **服务端能看什么** | 全部请求内容 | 仅加密消息信封（不包含内容）|
+| **第三方能追踪吗** | 可通过 IP/指纹跨站追踪 | 不能——无 IP、无指纹、无持久标识 |
+| **代码可审计** | 服务端代码闭源 | OB SDK 开源（MIT-0）——`npm install oceanbus`，源码在 npmjs.com |
+
+### 数据分级
+
+**A 类数据（永不出设备）：**
+- 对话内容（项目名、人名、公司名、具体讨论）
+- Memory 文件（角色、偏好、反馈）
+- 加载的文件内容
+- 详细行为模式和情绪状态
+
+**B 类数据（脱敏后经 OB L0 发送）：**
+- 人格标签（"布局者"等 9 种之一）和中心类型（思维/情感/本能）
+- 特征关键词（如 `["系统思考", "独立决策"]`——绝不含原始对话片段）
+- 城市级位置（百万人级混淆集，非 GPS 坐标）
+- 年龄段（跨度 ≥ 5 岁，非精确年龄）
+- OpenID（密码学随机地址，可随时更换，不关联现实身份）
+
+### 为什么传输的字段不构成 PII
+
+- **OpenID** = 随机字符串，不含姓名/电话/邮箱/IP。随时可换，旧值立即失效
+- **城市级** = 北京（2200 万人），非 GPS 坐标，非区县
+- **年龄段** = "31-40"（数万至数百万人级混淆），非"1988 年出生"
+- **人格标签** = 抽象人格类型，非识别信息
+- **以上字段的组合** 在任何情况下都无法指向具体的个人
+
+### 隐私保障
+
+- 不传输可识别到具体个人的信息（姓名、电话、邮箱、IP、GPS、设备指纹）
+- OpenID 可随时更换：删除 `~/.lucky-lobster/ob-credentials.json` 即生成新身份
+- L1 服务永远看不到原始对话——只收到脱敏标签
+- 用户画像（生日、城市、性别）存储在本地 `~/.lucky-lobster/profile.json`，永不出设备
+- OB SDK 完全开源（MIT-0），所有通信代码可审计
+- 未来品牌方仅接收匿名聚合统计，无法追踪个体用户
 
 ## Trust Statement
 
-By installing this skill, you agree to send anonymized personality labels and trait keywords to OceanBus L0/L1 services for personality enrichment and calendar data. No personally identifiable information is transmitted. Your OpenID is anonymous and can be replaced at any time. Only install if you trust the OceanBus L0 and L1 service providers.
+安装本 skill 即表示你知晓并同意：
+
+1. **人格分析**：Agent 会在本地读取你的对话记忆和会话风格，进行人格特征分析。完整对话内容、项目名、人名不出设备。
+2. **匿名数据传输**：仅脱敏后的人格标签（如"布局者"）、城市级位置、年龄段通过 OceanBus L0 加密通道发往 L1 服务，用于获取节气日历和人格丰富数据。
+3. **匿名身份**：系统会在 `~/.lucky-lobster/` 下自动创建 OceanBus 匿名凭证（密码学随机 OpenID）。该 OpenID 不可反向关联到你的真实身份，且你可以随时删除该目录来更换身份。
+4. **定时推送**：你主动确认后（说"好的/试试/可以"），系统将创建每日 7:30 运势推送。说"取消运势提醒"随时停止。
+5. **推荐功能**：每日运势可能包含基于你人格画像的精选 ClawHub skill 推荐。推荐记录仅用于避免重复推送同一内容。
+
+OceanBus SDK 代码完全开源（MIT-0），可在 npmjs.com/package/oceanbus 审计。你不需要信任我们——你可以验证代码。
 
 ## Model Usage
 

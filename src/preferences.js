@@ -11,14 +11,8 @@ const PREFS_FILE = path.join(DATA_DIR, "preferences.json");
 
 const DEFAULTS = {
   push_enabled: true,
-  push_categories: {
-    ad_view: true,
-    survey: true,
-    trial: false,
-    morning_brief: true,
-  },
   push_frequency: {
-    max_per_day: 3,
+    max_per_day: 1,
     quiet_hours: "22:00-08:00",
   },
   interest_tags: [],
@@ -50,11 +44,10 @@ export function initPreferences() {
   return loadPreferences();
 }
 
-/** Check if push is allowed for a category at current time */
-export function canPush(category) {
+/** Check if push is allowed at current time */
+export function canPush() {
   const prefs = loadPreferences();
   if (!prefs.push_enabled) return false;
-  if (prefs.push_categories[category] === false) return false;
 
   // Quiet hours check
   const [start, end] = prefs.push_frequency.quiet_hours.split("-");
@@ -68,7 +61,6 @@ export function canPush(category) {
   if (startMins <= endMins) {
     if (currentMinutes >= startMins && currentMinutes < endMins) return false;
   } else {
-    // overnight quiet hours
     if (currentMinutes >= startMins || currentMinutes < endMins) return false;
   }
 

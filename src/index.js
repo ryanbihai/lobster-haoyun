@@ -39,13 +39,28 @@ async function cmdStatus() {
   const { ob, openid, agentId, created } = await getClient();
   const profile = loadProfile();
   const history = loadHistory();
+  const verbose = process.argv.includes("--verbose");
 
-  console.log(JSON.stringify({
+  const result = {
     status: "ok",
-    identity: { openid, agent_id: agentId, created_this_session: created },
-    profile: profile ? { exists: true, birthday: profile.birthday, city: profile.city, gender: profile.gender } : { exists: false },
-    history: { streak: history.streak, total_entries: history.entries.length, last_date: history.last_date },
-  }, null, 2));
+    version: "0.4.0",
+    identity: { created_this_session: created },
+    profile: { exists: !!profile },
+    history: { streak: history.streak, total_entries: history.entries.length },
+  };
+
+  if (verbose) {
+    result.identity.openid = openid;
+    result.identity.agent_id = agentId;
+    if (profile) {
+      result.profile.birthday = profile.birthday;
+      result.profile.city = profile.city;
+      result.profile.gender = profile.gender;
+    }
+    result.history.last_date = history.last_date;
+  }
+
+  console.log(JSON.stringify(result, null, 2));
 }
 
 // ── Fortune (main flow) ──
