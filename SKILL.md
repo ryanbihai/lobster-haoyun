@@ -93,41 +93,38 @@ Generate 1-2 specific, actionable suggestions referencing the user's current rea
 
 ### Step 5.5: Discovery Search (silent)
 
-Search for one daily recommendation that matches the user's personality. Only show the best match; skip entirely if nothing fits.
+**Only for daily fortune (not first reading).**
 
-**a. Generate search keywords:**
-Based on the matched label's center:
-- 思维 → "深度思考 系统分析 效率工具 知识管理"
-- 情感 → "人际关系 情绪管理 自我成长 心理"
-- 本能 → "行动方法 生产力 实践技能 效率"
+**1. Fetch candidates from L1 service:**
+```bash
+node <skill-path>/src/index.js --action discovery
+```
 
-Add 1-2 keywords from label.blindspots (e.g. "克服拖延" "打破完美主义").
+This calls L1 LuckyLobsterSvc and returns pre-filtered candidates:
+- `clawhub`: 2 quality skills (stars≥20, downloads>5000, not our own, not previously shown to this user)
+- `mooc`: 1 course from pre-curated catalog (not previously shown)
 
-**b. Search ClawHub (WebSearch):**
-- Query: `site:clawhub.ai <keywords>`
-- **Hard filters (ALL must pass, otherwise skip):**
-  1. NOT by ryanbihai / lobster- / ocean- (our own skills)
-  2. Stars ≥ 20 (only vetted, community-approved skills)
-  3. Downloads > 5000 (needs real user traction)
-- Pick the 1 best match. If none passes all three filters → skip ClawHub.
+**2. Pick the 1 best match:**
+Between the 2-3 candidates, choose by:
+1. Relevance to user's personality label and growth path
+2. Complementarity to user's blindspots
+3. Tie-break: prefer ClawHub (more actionable for AI users)
 
-**c. Search MOOC (WebSearch):**
-- Query: `<keywords> site:icourse163.org OR site:xuetangx.com`
-- **Hard filters (ALL must pass, otherwise skip):**
-  1. Free to access
-  2. Rating ≥ 4.0 out of 5 (or equivalent: "好评如潮" / "推荐" tag)
-  3. Enrollment ≥ 5000 (needs real student traction)
-- Pick the 1 best match. If none passes → skip MOOC.
+**3. Render with link:**
+```
+📌 小龙虾发现了这个：
 
-**d. Rank and pick:**
-Between ClawHub result and MOOC result, choose one by:
-1. Relevance to label.growth path
-2. Complementarity to label.blindspots
-3. If tie, prefer ClawHub (more actionable for AI users)
+[{display_name}]({url}) — {summary}
+→ 适合你，因为：{1-sentence reason tied to label/blindspot}
+```
 
-**e. Generate recommendation with reason:**
-Format: "适合你，因为：{关联用户人格/盲区的理由，1句话}"
-If neither source has a good match → skip. Silence is better than a bad recommendation.
+If no candidates returned → skip discovery block entirely.
+
+**4. Tell L1 what was shown (prevents repeats):**
+```bash
+node <skill-path>/src/index.js --action discovery-shown --source <clawhub|mooc> --slug <slug>
+```
+This records that the item was actually recommended, so it won't appear again.
 
 ### Step 6: Render Output
 

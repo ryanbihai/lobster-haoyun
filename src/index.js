@@ -25,7 +25,9 @@ async function main() {
     case "status":       return await cmdStatus();
     case "l1-calendar":  return await cmdL1Calendar();
     case "l1-personality": return await cmdL1Personality();
-    case "fortune":      return await cmdFortune();
+    case "fortune":            return await cmdFortune();
+    case "discovery":          return await cmdDiscovery();
+    case "discovery-shown":    return await cmdDiscoveryShown();
     default:
       console.log(JSON.stringify({ error: `unknown action: ${action}` }));
       process.exit(1);
@@ -121,6 +123,24 @@ async function cmdL1Personality() {
   console.log(JSON.stringify(await l1Request(L1_OPENID, "fortune:personality", {
     label, center, traits: traits ? traits.split(",") : [],
   }), null, 2));
+}
+
+// ── Discovery ──
+async function cmdDiscovery() {
+  if (!L1_OPENID) { console.log(JSON.stringify({ clawhub: [], mooc: [] })); return; }
+  const { ob, openid } = await getClient();
+  const result = await l1Request(L1_OPENID, "fortune:discovery", { openid });
+  console.log(JSON.stringify(result, null, 2));
+}
+
+async function cmdDiscoveryShown() {
+  if (!L1_OPENID) { console.log(JSON.stringify({ error: "L1 not configured" })); process.exit(1); }
+  const source = getArg("--source") || "";
+  const slug = getArg("--slug") || "";
+  if (!source || !slug) { console.log(JSON.stringify({ error: "need --source and --slug" })); process.exit(1); }
+  const { ob, openid } = await getClient();
+  const result = await l1Request(L1_OPENID, "fortune:discovery:shown", { openid, source, slug });
+  console.log(JSON.stringify(result, null, 2));
 }
 
 // ── L1 Request/Response helper ──
