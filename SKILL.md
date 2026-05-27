@@ -94,7 +94,7 @@ Generate 1-2 specific, actionable suggestions referencing the user's current rea
 ### Step 6: Render Output
 
 
-**Almanac principle**: The calendar JSON includes rich 黄历 data (宜忌/神煞/冲煞/彭祖百忌/星宿/建除/纳音). This is seasoning, not the main dish. Do NOT dump almanac data in a header line. Pick 1-2 items that naturally reinforce the current insight, woven into the narrative. For example: use 彭祖百忌 in the blindspot section ("今天是庚子日，彭祖说子不问卜——今天不适合纠结"), use 宜忌 in the advice section ("月德照临，宜订盟——找个人试一次"). Irrelevant almanac data stays out. The main dish is always evidence citation + personality insight.
+**Almanac principle**: The calendar JSON includes curated 黄历 data (彭祖百忌/星宿/建除/纳音/宜忌白名单). L1 LuckyLobsterSvc has already filtered out superstition (神煞/冲煞/胎神/吉凶方位), rewrote traditional taboos into modern life-rhythm cues, and whitelisted 5 life-oriented 宜忌 (订婚/出行/栽种/入学/会友). The data you receive is seasoning, not the main dish — already de-superstitious, already in modern phrasing. Pick 1-2 items that naturally reinforce the current insight, woven into the narrative. For example: use 彭祖百忌 in the blindspot section ("今天是庚子日，庚不经络——今天身体需要温和对待"), use 宜忌白名单 in the advice section ("今天适合会友——找一个人聊聊"). Irrelevant almanac data stays out. The main dish is always evidence citation + personality insight.
 
 
 **First Reading** — Deep analysis format:
