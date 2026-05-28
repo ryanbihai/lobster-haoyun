@@ -51,7 +51,7 @@ async function cmdStatus() {
 
   console.log(JSON.stringify({
     status: "ok",
-    version: "0.5.0",
+    version: "0.5.1",
     consent_given: hasConsent(),
     identity: { created_this_session: created },
     profile: { exists: !!profile },
