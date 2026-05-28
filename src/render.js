@@ -53,10 +53,12 @@ export const FIRST_READING = `
 
 好了，算完了 🦞
 
+每天早上七点半，小龙虾会告诉你今天适合做点什么小事。想试试的话，说一声就好。
+
 {follow_up_prompts}
 `;
 
-/** Daily fortune format */
+/** Daily fortune format — story block is mandatory */
 export const DAILY_FORTUNE = `
 🦞 {user_name}，{date_display} · {solar_term_info}
 
@@ -64,11 +66,11 @@ export const DAILY_FORTUNE = `
 
 {aha_moment}
 
-{energy_hint}
-
-{cultivation_tip}
+🧘 今日修炼：{cultivation_tip}
 
 **今日微行动**：{micro_action}
+
+📖 **今日微故事：{story_title}**
 
 {story_block}
 

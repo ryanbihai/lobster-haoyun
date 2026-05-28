@@ -159,33 +159,38 @@ Read JSON output. Key fields:
 - Life phase: 高压期 | 迷茫期 | 平稳期 | 过渡期
 
 **B. If `personality.has_dimensions` is FALSE or `personality.needs_reevaluation` is TRUE:**
-Perform full dimension analysis. For each dimension, judge with specific evidence and write 1-2 sentences:
+Perform full dimension analysis. For each dimension, write a paragraph of 2-4 sentences with specific evidence. **Use paragraph format — never tables. Never use single-line summaries.** This analysis will be rendered verbatim in Step 5.
 
-1. **工作方式** — 架构型 or 探索型? Evidence from how they approach projects/tasks.
-2. **沟通模式** — 精炼型 or 叙事型? Evidence from message style, sentence length, structure.
-3. **关注焦点** — 事务型 or 人际型? Evidence from what they talk about most.
-4. **能量来源** — 内收型 or 外放型? Evidence from work patterns, social references.
-5. **情感倾向** — 理性型 or 感性型? Evidence from decision style, conflict handling.
+Write the analysis in this exact structure, saving each part for Step 5 rendering:
 
-Each dimension judgment MUST cite one specific behavior from memory/CLAUDE.md/conversation history.
+1. **工作方式** — Which pole (架构型 or 探索型)? Evidence: cite a specific behavior from their memory/CLAUDE.md/conversation. Then explain what this means for how they work.
+2. **沟通模式** — Which pole (精炼型 or 叙事型)? Evidence: cite a specific message or communication pattern.
+3. **关注焦点** — Which pole (事务型 or 人际型)? Evidence: cite what they talk about most.
+4. **能量来源** — Which pole (内收型 or 外放型)? Evidence: cite work patterns and social references.
+5. **情感倾向** — Which pole (理性型 or 感性型)? Evidence: cite decision style and conflict handling.
 
-After analysis, assemble the 5-char code internally (e.g., `架精事内理`), look up the type_name from the 32-type table above, and call:
+After writing the analysis, assemble the 5-char code internally, look up type_name from the 32-type table, and call:
 ```bash
 node <skill-path>/src/index.js --action save-dimensions --code <5chars> --confidence <0-1>
 ```
-Note: `--type` is optional — JS auto-resolves type_name from the 32-type table. `--confidence` must be > 0.
 
-**CRITICAL: The 5-char code and type_name are for internal JS storage only. Never show them to the user. Users see expanded dimension descriptions, not abbreviations.**
+**CRITICAL RULES:**
+- Write in natural language paragraphs, NOT tables, NOT bullet lists with single-line evidence
+- Each dimension paragraph must be 2-4 sentences: pole + evidence + implication
+- The 5-char code and type_name are for internal JS storage only — never show to user
+- Save the full paragraph text for rendering in Step 5
 
-### Step 3: Story Matching (skip only if no dimensions stored yet)
+### Step 3: Story Matching (MANDATORY for all flows — do NOT skip)
+
+**Always call this step.** For first reading, use the emotion/life-phase detected in Step 2A. For daily fortune, use today's context.
 
 ```bash
 node <skill-path>/src/index.js --action filter-stories --emotion <signal> --life-phase <phase>
 ```
 
-From 0-8 candidates, pick 1 best match. Write 2-3 sentence contextual interpretation linking the story's moral to user's current situation. Keep it light — no lecture tone.
+From 0-8 candidates, pick the 1 best match. Write 2-3 sentence contextual interpretation linking the story's moral to user's current situation. Keep it light — no lecture tone.
 
-If no dimensions stored yet → skip story block.
+If no dimensions stored yet → the command returns `{ "candidates": [], "reason": "no dimensions stored" }`. In this case, skip the story block.
 
 ### Step 4: Discovery (daily fortune only, skip on first reading)
 
@@ -204,18 +209,17 @@ Skip if no candidates.
 
 ### Step 5: Render Output
 
-**First Reading:**
+**First Reading — MANDATORY FORMAT. Do NOT use tables. Do NOT compress into single lines.** Follow this exact structure with paragraph breaks between every section:
 
-先给标签作钩子——一句话概括这个人是什么样的。然后展开五个维度各一段，每段带证据。接一个故事。最后盲区和建议。
+---
 
-```
 🦞 {user_name} · {season}命盘
 
 小龙虾掐指一算——
 
 **你的底色：{type_name}**
 
-{一句话通俗解释这个标签——不是字典定义，是用大白话说这个人是什么样的。例如精算师→"说白了你是个喜欢在安静中把框架想透、用最少的话给最准的指令、靠逻辑推着事情往前走的人。"}
+{通俗解释，用大白话，2-3句。例如精算师→"说白了你是个喜欢在安静中把框架想透、用最少的话给最准的指令、靠逻辑推着事情往前走的人。"}
 
 ---
 
@@ -223,76 +227,91 @@ Skip if no candidates.
 
 **你怎么做事：{架构型 or 探索型}**
 
-{1-2 sentences: which pole + specific evidence. Must cite a real behavior from the user's memory/CLAUDE.md/conversation.}
+{Write the full paragraph from Step 2B analysis here. 2-4 sentences with specific evidence cited. Then add what this means — the implication of this trait.}
+
+（空一行）
 
 **你怎么说话：{精炼型 or 叙事型}**
 
-{1-2 sentences: which pole + evidence.}
+{Full paragraph from Step 2B. Evidence + implication.}
+
+（空一行）
 
 **你关注什么：{事务型 or 人际型}**
 
-{1-2 sentences: which pole + evidence.}
+{Full paragraph from Step 2B. Evidence + implication.}
+
+（空一行）
 
 **你从哪里获得能量：{内收型 or 外放型}**
 
-{1-2 sentences: which pole + evidence.}
+{Full paragraph from Step 2B. Evidence + implication.}
+
+（空一行）
 
 **你怎么做判断：{理性型 or 感性型}**
 
-{1-2 sentences: which pole + evidence.}
+{Full paragraph from Step 2B. Evidence + implication.}
 
 ---
 
 **你的盲区**
 
-{基于5个维度的极端倾向，指出1-2个潜在盲区。必须关联用户的实际情况，不能泛泛而谈。例如架构型+内收型→容易过度规划才动手；精炼型+理性型→反馈太精简别人可能摸不着头脑。}
+{Based on the 5 dimension extremes, name 1-2 specific blindspots. MUST tie to user's actual situation — not generic advice.}
 
 📖 **今日微故事：{story_title}**
 
-{story content + 2-3 sentence contextual interpretation linking the story's moral to the user's current situation.}
+{Story content from Step 3. Then 2-3 sentence contextual interpretation linking the story's moral to user's current situation.}
 
 **建议**
 
-> {advice 1 — 具体、关联用户当前项目/情境、可执行}
+> {advice 1 — specific, tied to user's current project/situation}
 
-> {advice 2 — "too small to fail" 级别的微步骤}
+> {advice 2 — "too small to fail" micro-step}
 
 好了，算完了 🦞
 
-每天早上七点半，小龙虾会告诉你今天适合做点什么小事。
+每天早上七点半，小龙虾会告诉你今天适合做点什么小事。想试试的话，说一声就好。
 
-想试试的话，说一声就好。
-```
+---
 
-**关键规则：**
-- 绝不出现 5 字代码（如"架精事内理"）
-- {type_name} 用 32 类型标签（如"精算师"），加一句通俗解释
-- 每个维度的判断必须带具体行为证据
-- 故事必须关联到用户当前情境
+**FORMAT RULES:**
+- Use paragraph format throughout — NEVER use tables
+- Each dimension section must have: bold header + blank line + paragraph + blank line before next section
+- The `---` separator must appear exactly where shown above
+- Never show 5-char codes or the 32-type table
+- Story is mandatory if Step 3 returned candidates — do not skip it
 
 If user agrees to daily delivery → CronCreate at `30 7 * * *`.
 
 **Daily Fortune:**
 
-轻量格式。不重复维度分析，但可以基于已知维度给一条贴合用户行为模式的提示。
+轻量格式。不重复维度分析。但必须包含 Step 3 的故事——这是每日运势的核心亮点。
 
-```
+---
+
 🦞 {user_name}，{date} · {solar_term}
 
 {emotion_acknowledgment — if strong signal detected from today's conversation, one line max}
 
-{aha moment — solar term connection, 2-3 sentences. Weave in a dimension-aware hint if natural}
+{aha moment — solar term connection, 2-3 sentences}
 
 🧘 今日修炼：{cultivation_tip — by genre: 收网日/充电日/连接日}
 
 **今日微行动**：{one tiny doable action}
 
-{story block — if Step 3 returned a match, render with 📖 header. The interpretation should link the story's moral to user's behavior patterns — not the code, the patterns}
+📖 **今日微故事：{story_title}**
+
+{Story content from Step 3. Then 2-3 sentence contextual interpretation. This is MANDATORY if Step 3 returned candidates.}
 
 运势一句话：**{one-liner}**
-```
 
-**绝不出现 5 字代码或 32 类型标签名。**
+---
+
+**FORMAT RULES:**
+- Story block is MANDATORY — always call Step 3 filter-stories and always render the best match
+- Never show 5-char codes or type labels in output
+- Keep it light — this is a daily ritual, not a deep analysis
 
 **Weekly Review (Sunday):**
 

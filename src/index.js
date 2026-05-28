@@ -130,10 +130,10 @@ async function cmdFortune() {
       },
     },
     _instructions: isFirst
-      ? "First reading. Execute Step 2-4 (context sensing + dimension analysis) from SKILL.md. For 5 dimensions (工作方式/沟通模式/关注焦点/能量来源/情感倾向), judge each with evidence citation. After analysis, call --action save-dimensions."
+      ? "FIRST READING. Step 2A: scan conversation for emotion/topic/phase. Step 2B: analyze 5 dimensions in paragraph format (NOT tables), cite evidence for each, save to --action save-dimensions. Step 3: call --action filter-stories, pick best match. Step 5: render using First Reading format — tag hook + 5 paragraphs + story + blindspot + advice. Use blank lines between sections."
       : (isSundayReview
-        ? "Sunday weekly review. Summarize this week's progress + update personality insight + append daily fortune."
-        : "Daily fortune. Call --action filter-stories for story candidates. Apply Aha Moment formula (节气). Pick genre based on user's recent activity. Output light daily format with optional story block."),
+        ? "SUNDAY REVIEW. Summarize this week + update personality insight + call filter-stories + render daily fortune."
+        : "DAILY FORTUNE. ALWAYS call --action filter-stories first. Then render with aha moment + cultivation tip + micro-action + STORY (mandatory). Keep it light, use paragraph format."),
   }, null, 2));
 }
 
