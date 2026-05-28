@@ -10,14 +10,18 @@
  */
 import { createOceanBus } from "oceanbus";
 import { getClient } from "./ob-client.js";
-import { loadProfile, getDimensions } from "./profile.js";
+import { loadProfile, getDimensions, saveDimensions as saveDims } from "./profile.js";
 import { loadHistory, addEntry, getStreak, isSunday, hasTodayReading, getWeekEntries } from "./history.js";
 import { initPreferences } from "./preferences.js";
 import { getLocalCalendar } from "./local-calendar.js";
 import { generateAha, pickGenre, generateMicroAction } from "./cal-templates.js";
 import { hasConsent } from "./consent.js";
 import { isValidCode, needsReEvaluation, filterCorpus } from "./dimensions.js";
-import corpus from "./corpus.json" with { type: "json" };
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const corpus = JSON.parse(fs.readFileSync(path.join(__dirname, "corpus.json"), "utf-8"));
 
 const BASE_URL = process.env.OCEANBUS_URL || "https://ai-t.ihaola.com.cn/api/l0";
 const L1_OPENID = process.env.LUCKY_LOBSTER_SVC_OPENID || "cOrquik8RuElUIUakY7FAmB3N5gdmXRR1Yg2b-GX3WeezJGSZVVV0fRd7eknILQodV9ATrpM93N4gYyP";
@@ -91,8 +95,8 @@ async function cmdFortune() {
   // 3. Generate Aha moment data (Skill-side, no L1 needed for Phase 2)
   const ahaContext = calendar.solar_term?.name ? {
     aha_text: generateAha(calendar, ""), // context filled by CC
-    genre: pickGenre("", loadHistory()),
-    micro_action: generateMicroAction("充电日", "", ""), // filled by CC
+    genre: pickGenre("", { entries: loadHistory().entries, week_entries: getWeekEntries() }),
+    micro_action: generateMicroAction("充电日"), // genre filled by CC
   } : null;
 
   // 4. Personality state
@@ -148,10 +152,9 @@ async function cmdSaveDimensions() {
   }
 
   // Auto-resolve type_name from code — 32-type table is the single source of truth
-  const { saveDimensions } = await import("./profile.js");
   const { getTypeName } = await import("./dimensions.js");
   const typeName = getTypeName(code);
-  saveDimensions({ code, type_name: typeName, confidence });
+  saveDims({ code, type_name: typeName, confidence });
   console.log(JSON.stringify({ status: "ok", code, type_name: typeName, confidence }));
 }
 

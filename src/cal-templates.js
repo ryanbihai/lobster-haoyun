@@ -83,7 +83,7 @@ export function pickGenre(recentContext, history) {
 /**
  * Generate micro-action based on genre, label, and context
  */
-export function generateMicroAction(genre, label, center) {
+export function generateMicroAction(genre) {
   const actions = {
     '收网日': [
       '把今天最让你焦虑的那件事，拆成 3 个小步骤。只做第一个。',
