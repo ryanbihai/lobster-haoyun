@@ -9,13 +9,15 @@
  *   node src/index.js --action l1-personality --label <name> --center <c>
  */
 import { createOceanBus } from "oceanbus";
-import { getClient, getOpenId } from "./ob-client.js";
-import { hasProfile, loadProfile, saveProfile } from "./profile.js";
+import { getClient } from "./ob-client.js";
+import { loadProfile, getDimensions } from "./profile.js";
 import { loadHistory, addEntry, getStreak, isSunday, hasTodayReading, getWeekEntries } from "./history.js";
-import { initPreferences, loadPreferences } from "./preferences.js";
+import { initPreferences } from "./preferences.js";
 import { getLocalCalendar } from "./local-calendar.js";
 import { generateAha, pickGenre, generateMicroAction } from "./cal-templates.js";
 import { hasConsent } from "./consent.js";
+import { isValidCode, needsReEvaluation, filterCorpus } from "./dimensions.js";
+import corpus from "./corpus.json" with { type: "json" };
 
 const BASE_URL = process.env.OCEANBUS_URL || "https://ai-t.ihaola.com.cn/api/l0";
 const L1_OPENID = process.env.LUCKY_LOBSTER_SVC_OPENID || "cOrquik8RuElUIUakY7FAmB3N5gdmXRR1Yg2b-GX3WeezJGSZVVV0fRd7eknILQodV9ATrpM93N4gYyP";
@@ -27,6 +29,8 @@ async function main() {
     case "l1-calendar":  return await cmdL1Calendar();
     case "l1-personality": return await cmdL1Personality();
     case "fortune":            return await cmdFortune();
+    case "save-dimensions":    return await cmdSaveDimensions();
+    case "filter-stories":     return await cmdFilterStories();
     case "discovery":          return await cmdDiscovery();
     case "discovery-shown":    return await cmdDiscoveryShown();
     default:
@@ -43,7 +47,7 @@ async function cmdStatus() {
 
   console.log(JSON.stringify({
     status: "ok",
-    version: "0.4.2",
+    version: "0.5.0",
     consent_given: hasConsent(),
     identity: { created_this_session: created },
     profile: { exists: !!profile },
@@ -86,15 +90,25 @@ async function cmdFortune() {
 
   // 3. Generate Aha moment data (Skill-side, no L1 needed for Phase 2)
   const ahaContext = calendar.solar_term?.name ? {
-    aha_text: generateAha(calendar, "auto", "思维", ""), // center filled by CC
+    aha_text: generateAha(calendar, ""), // context filled by CC
     genre: pickGenre("", loadHistory()),
     micro_action: generateMicroAction("充电日", "", ""), // filled by CC
   } : null;
 
-  // 4. Build output for CC
+  // 4. Personality state
+  const dims = getDimensions();
+  const personality = {
+    has_dimensions: !!dims,
+    needs_reevaluation: dims ? needsReEvaluation(dims.last_evaluated) : true,
+    dimensions: dims || null,
+    label_for_compat: dims?.type_name || null,
+  };
+
+  // 5. Build output for CC
   console.log(JSON.stringify({
     status: "ok",
     flow: isFirst ? "first_reading" : (isSundayReview ? "weekly_review" : "daily_fortune"),
+    personality,
     data: {
       profile: profile || { exists: false },
       calendar,
@@ -112,11 +126,51 @@ async function cmdFortune() {
       },
     },
     _instructions: isFirst
-      ? "First reading. Execute 6-step analysis from SKILL.md. Output deep personality reading with evidence citations."
+      ? "First reading. Execute Step 2-4 (context sensing + dimension analysis) from SKILL.md. For 5 dimensions (工作方式/沟通模式/关注焦点/能量来源/情感倾向), judge each with evidence citation. After analysis, call --action save-dimensions."
       : (isSundayReview
         ? "Sunday weekly review. Summarize this week's progress + update personality insight + append daily fortune."
-        : "Daily fortune. Apply Aha Moment formula (节气×人格). Pick genre based on user's recent activity. Output light daily format."),
+        : "Daily fortune. Call --action filter-stories for story candidates. Apply Aha Moment formula (节气). Pick genre based on user's recent activity. Output light daily format with optional story block."),
   }, null, 2));
+}
+
+// ── Save Dimensions ──
+async function cmdSaveDimensions() {
+  const code = getArg("--code") || "";
+  const confidence = parseFloat(getArg("--confidence") || "0");
+
+  if (!isValidCode(code)) {
+    console.log(JSON.stringify({ status: "error", message: `invalid code: ${code}` }));
+    process.exit(1);
+  }
+  if (!confidence || confidence <= 0) {
+    console.log(JSON.stringify({ status: "error", message: "--confidence must be > 0" }));
+    process.exit(1);
+  }
+
+  // Auto-resolve type_name from code — 32-type table is the single source of truth
+  const { saveDimensions } = await import("./profile.js");
+  const { getTypeName } = await import("./dimensions.js");
+  const typeName = getTypeName(code);
+  saveDimensions({ code, type_name: typeName, confidence });
+  console.log(JSON.stringify({ status: "ok", code, type_name: typeName, confidence }));
+}
+
+// ── Filter Stories ──
+async function cmdFilterStories() {
+  const dims = getDimensions();
+  if (!dims?.code) {
+    console.log(JSON.stringify({ candidates: [], reason: "no dimensions stored" }));
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const cal = getLocalCalendar(today);
+  const season = cal?.season?.name || "";
+  const emotion = getArg("--emotion") || "";
+  const lifePhase = getArg("--life-phase") || "";
+
+  const candidates = filterCorpus(dims.code, corpus, { season, emotion, lifePhase });
+  console.log(JSON.stringify({ candidates, count: candidates.length, context: { season, emotion, lifePhase } }, null, 2));
 }
 
 // ── L1 Calendar ──

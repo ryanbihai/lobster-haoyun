@@ -31,6 +31,28 @@ export function hasProfile() {
   return loadProfile() !== null;
 }
 
+// ── Dimension storage (5-dimension behavioral classification) ──
+
+export function saveDimensions(data) {
+  const profile = loadProfile() || {};
+  profile.dimensions = {
+    code: data.code,
+    type_name: data.type_name,
+    confidence: data.confidence,
+    last_evaluated: new Date().toISOString().slice(0, 10),
+  };
+  saveProfile(profile);
+}
+
+export function getDimensions() {
+  const profile = loadProfile();
+  return profile?.dimensions || null;
+}
+
+export function hasDimensions() {
+  return !!getDimensions();
+}
+
 export function getProfilePath() {
   return PROFILE_FILE;
 }

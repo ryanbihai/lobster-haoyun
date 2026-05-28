@@ -3,38 +3,64 @@
  * Used by the LLM as reference for rendering output.
  */
 
-/** First-time deep reading format */
+/** First-time deep reading format — tag hook + 5 dimensions + story + advice */
 export const FIRST_READING = `
-🔮 {user_name} · {season}命盘
+🦞 {user_name} · {season}命盘
 
 小龙虾掐指一算——
 
-**你的底色：{label}**
+**你的底色：{type_name}**
 
-{evidence_paragraphs}
+{type_explanation}
 
-**你内心深处**
+---
 
-{inner_drive}
+展开说说为什么——
 
-**你的盲区：{blindspot_title}**
+**你怎么做事：{work_style}**
+
+{work_evidence}
+
+**你怎么说话：{comm_style}**
+
+{comm_evidence}
+
+**你关注什么：{focus_style}**
+
+{focus_evidence}
+
+**你从哪里获得能量：{energy_style}**
+
+{energy_evidence}
+
+**你怎么做判断：{affect_style}**
+
+{affect_evidence}
+
+---
+
+**你的盲区**
 
 {blindspot_detail}
 
-**你的能量模式：{energy_title}**
+📖 **今日微故事：{story_title}**
 
-{energy_detail}
+{story_block}
 
-**给{user_name}的建议**
+**建议**
 
 {advice_paragraphs}
 
-好了，算完了。你给打个分——哪几条说对了，哪几条你觉得"小龙虾还是不够了解我"？
+好了，算完了 🦞
+
+{follow_up_prompts}
 `;
 
 /** Daily fortune format */
 export const DAILY_FORTUNE = `
 🦞 {user_name}，{date_display} · {solar_term_info}
+
+{emotion_acknowledgment}
 
 {aha_moment}
 
@@ -44,9 +70,13 @@ export const DAILY_FORTUNE = `
 
 **今日微行动**：{micro_action}
 
+{story_block}
+
 {discovery}
 
 运势一句话：**{one_liner}**
+
+{follow_up_prompts}
 `;
 
 /** Weekly review format */
@@ -64,6 +94,8 @@ export const WEEKLY_REVIEW = `
 {today_fortune}
 
 运势一句话：**{one_liner}**
+
+{follow_up_prompts}
 `;
 
 /** Fortune genre choices for daily */

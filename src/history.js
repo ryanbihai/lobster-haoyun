@@ -50,7 +50,8 @@ export function addEntry(entry) {
   history.last_date = today;
   history.entries.push({
     date: today,
-    label: entry.label || null,
+    label: entry.label || entry.dimensions?.type_name || null,
+    dimensions: entry.dimensions || null,
     scene: entry.scene || null,
     rating: entry.rating || null,
   });
