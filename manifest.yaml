@@ -24,7 +24,7 @@ requires:
       description: OceanBus L0 API base URL
     - name: LUCKY_LOBSTER_SVC_OPENID
       required: false
-      description: L1 LuckyLobsterSvc OpenID for calendar/personality enrichment
+      description: L1 service OpenID for calendar + discovery
 os:
   - macos
   - linux

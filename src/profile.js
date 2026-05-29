@@ -1,6 +1,6 @@
 /**
  * Local profile I/O — reads/writes ~/.lucky-lobster/profile.json
- * Contains user info: birthday (MM-DD), city, gender. Never leaves device.
+ * Stores 5-dim behavioral classification. Never leaves device.
  */
 import os from "node:os";
 import path from "node:path";
@@ -25,10 +25,6 @@ export function loadProfile() {
 export function saveProfile(data) {
   ensureDir();
   fs.writeFileSync(PROFILE_FILE, JSON.stringify({ ...data, updated_at: new Date().toISOString() }, null, 2));
-}
-
-export function hasProfile() {
-  return loadProfile() !== null;
 }
 
 // ── Dimension storage (5-dimension behavioral classification) ──

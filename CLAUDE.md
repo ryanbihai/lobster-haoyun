@@ -8,7 +8,7 @@ Agent-based deep personality reading skill for ClawHub. Zero user input — anal
 npm install
 node src/index.js --action status              # OB identity + profile + history + dimensions
 node src/index.js --action fortune              # Full flow: calendar + fortune data + personality state
-node src/index.js --action save-dimensions --code <5chars> --type <name> --confidence <0-1>
+node src/index.js --action save-dimensions --code <5chars> --confidence <0-1>
 node src/index.js --action filter-stories [--emotion <e>] [--life-phase <p>]
 node src/index.js --action l1-calendar          # Direct L1 CalendarSvc call
 node src/index.js --action discovery            # ClawHub/MOOC candidates from L1
@@ -34,7 +34,7 @@ Output JSON: { flow, personality: {has_dimensions, needs_reevaluation, dimension
        ▼
 CC reads SKILL.md → context sensing → dimension analysis → save-dimensions
        │
-       ├── filter-stories → corpus.json filtered by dimensions code
+       ├── filter-stories → L1 story engine (497-story corpus) or local fallback (20 stories)
        │
        ▼
 Render Markdown (tag hook + 5-dim breakdown + story + blindspot + advice)
@@ -42,12 +42,13 @@ Render Markdown (tag hook + 5-dim breakdown + story + blindspot + advice)
 
 ### Key Design Decisions
 
-- **LLM qualitative + JS quantitative**: LLM judges 5 dimensions with evidence → JS stores 5-char code, filters 500-story corpus, computes matches. LLM never touches raw filtering logic.
+- **LLM qualitative + JS quantitative**: LLM judges 5 dimensions with evidence → JS stores 5-char code, filters 497-story corpus, computes matches. LLM never touches raw filtering logic.
 - **5-Dimension Behavioral Classification**: Replaces old 9-label system (布局者/观察者/etc). Observed from actual behavior: 工作方式(架构/探索) × 沟通模式(精炼/叙事) × 关注焦点(事务/人际) × 能量来源(内收/外放) × 情感倾向(理性/感性) = 32 types.
 - **Expanded output, not codes**: User sees natural language dimension breakdown with evidence. 5-char code (e.g. `架精事内理`) is internal storage only — never shown to user.
-- **500-story corpus with 4-axis tags**: emotions, personality_fit (dimension values), seasonal_fit, life_situations. Weighted scoring: personality ×2 + season ×1 + life_phase ×1 + emotion ×0.5. Top 8 candidates returned for LLM to pick best match.
+- **497-story corpus on L1**: emotions, personality_fit (dimension values), seasonal_fit, life_situations. Weighted scoring runs on ECS via `fortune:filter-stories`. Top 8 candidates returned over OB encrypted channel. Client-side fallback: 20-story lightweight corpus.
+- **L1-first story matching**: `--action filter-stories` sends 5-char code + season + emotion + lifePhase to L1 (no conversation content). Falls back to local 20-story `corpus-fallback.json` if L1 unavailable.
 - **Local calendar fallback**: When L1 CalendarSvc is unavailable, `local-calendar.js` provides season/solar term data.
-- **A/B data split**: Profile/birthday/behavior stay local (A data). Only 5-char dimension code + city-level location go to L1 (B data).
+- **A/B data split**: Behavioral analysis stays local (A data). 5-char dimension code + city (if provided) + date + OpenID go to L1 via encrypted OB L0 (B data).
 - **Three flows**: first_reading (5-dim + story) → daily_fortune (story matching) → weekly_review.
 
 ## File Map
@@ -56,15 +57,14 @@ Render Markdown (tag hook + 5-dim breakdown + story + blindspot + advice)
 src/
   index.js             — CLI entry: fortune/save-dimensions/filter-stories/status/l1-*/discovery
   dimensions.js        — 5-dim definitions + 32-type TYPE_TABLE + filterCorpus() scoring engine
-  corpus.json          — 500 classic stories with emotion/personality/season/life tags (~250KB)
+  corpus-fallback.json — 20 classic stories for offline fallback (~15KB)
   identity.js          — OB identity auto-register + restore from disk
   ob-client.js         — OB connection wrapper (sendJson, startListening, L1 request/response)
   profile.js           — Profile I/O + dimension storage (~/.lucky-lobster/profile.json)
   history.js           — Fortune history + streak + Sunday detection
-  preferences.js       — Push preferences (categories, frequency, quiet hours)
+  preferences.js       — Push preferences (enabled, frequency, quiet hours)
   local-calendar.js    — Lightweight calendar fallback (24 term dates, seasons)
   cal-templates.js     — Aha Moment engine (simplified, generic templates)
-  persuasion.js        — 7 persuasion technique templates (legacy, tone rules now in SKILL.md)
   render.js            — Markdown format templates (first/daily/weekly with expanded placeholders)
   consent.js           — First-run privacy consent gate
 ```
@@ -76,7 +76,7 @@ src/
   ob-credentials.json   — OB identity (agent_id, api_key, openid)
   profile.json          — User info + dimensions {code, type_name, confidence, last_evaluated}
   fortune-history.json  — Past readings (with dimensions field), streak count
-  preferences.json      — Push preferences, interest tags
+  preferences.json      — Push preferences (enabled, frequency, quiet hours)
   consent.json          — Privacy consent record
 ```
 
@@ -90,12 +90,14 @@ A Data (local ONLY):
   LLM local analysis → 5-dim judgment with evidence citations
 
 B Data (encrypted → L1 via OB L0):
-  5-char dimension code · city-level location (if provided) · date
+  5-char dimension code · season · emotion · life phase (for story matching)
+  City-level location (if provided) · date (for calendar)
   OpenID (cryptographically random, used for request/response correlation)
   Discovery: OpenID for recommendation dedup (no ad tracking)
        │ via OB L0 (E2EE)
        ▼
   L1 CalendarSvc → solar term / phenology data
+  L1 StoryEngine → top 8 matched stories from 497-entry corpus
   L1 DiscoverySvc → community skill/MOOC recommendations
 
 Local storage (~/.lucky-lobster/):
@@ -109,7 +111,7 @@ Local storage (~/.lucky-lobster/):
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | OCEANBUS_URL | No | https://ai.ihaola.com.cn/api/l0 | L0 API base URL |
-| LUCKY_LOBSTER_SVC_OPENID | No | — | L1 service OpenID for enrichment |
+| LUCKY_LOBSTER_SVC_OPENID | No | — | L1 service OpenID for calendar + discovery |
 
 ## Dependencies
 

@@ -6,7 +6,7 @@
  *   node src/index.js --action status          # Show OB identity + profile + history
  *   node src/index.js --action fortune          # Full flow: calendar + fortune data for CC
  *   node src/index.js --action l1-calendar      # Call L1 CalendarSvc
- *   node src/index.js --action l1-personality --label <name> --center <c>
+ *   node src/index.js --action filter-stories [--emotion <e>] [--life-phase <p>]
  */
 import { createOceanBus } from "oceanbus";
 import { getClient } from "./ob-client.js";
@@ -16,12 +16,11 @@ import { initPreferences } from "./preferences.js";
 import { getLocalCalendar } from "./local-calendar.js";
 import { generateAha, pickGenre, generateMicroAction } from "./cal-templates.js";
 import { hasConsent } from "./consent.js";
-import { isValidCode, needsReEvaluation, filterCorpus } from "./dimensions.js";
+import { isValidCode, needsReEvaluation } from "./dimensions.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const corpus = JSON.parse(fs.readFileSync(path.join(__dirname, "corpus.json"), "utf-8"));
 
 const BASE_URL = process.env.OCEANBUS_URL || "https://ai-t.ihaola.com.cn/api/l0";
 const L1_OPENID = process.env.LUCKY_LOBSTER_SVC_OPENID || "cOrquik8RuElUIUakY7FAmB3N5gdmXRR1Yg2b-GX3WeezJGSZVVV0fRd7eknILQodV9ATrpM93N4gYyP";
@@ -31,7 +30,6 @@ async function main() {
   switch (action) {
     case "status":       return await cmdStatus();
     case "l1-calendar":  return await cmdL1Calendar();
-    case "l1-personality": return await cmdL1Personality();
     case "fortune":            return await cmdFortune();
     case "save-dimensions":    return await cmdSaveDimensions();
     case "filter-stories":     return await cmdFilterStories();
@@ -120,7 +118,6 @@ async function cmdFortune() {
         is_first_time: isFirst,
         is_sunday: isSundayReview,
         streak: getStreak(),
-        total_entries: loadHistory().entries.length,
         week_entries: isSundayReview ? getWeekEntries() : [],
       },
       aha: ahaContext,
@@ -171,8 +168,28 @@ async function cmdFilterStories() {
   const emotion = getArg("--emotion") || "";
   const lifePhase = getArg("--life-phase") || "";
 
-  const candidates = filterCorpus(dims.code, corpus, { season, emotion, lifePhase });
-  console.log(JSON.stringify({ candidates, count: candidates.length, context: { season, emotion, lifePhase } }, null, 2));
+  // Try L1 first
+  if (L1_OPENID) {
+    try {
+      const result = await l1Request(L1_OPENID, "fortune:filter-stories", {
+        code: dims.code, season, emotion, lifePhase
+      });
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    } catch (_) { /* fall through to local fallback */ }
+  }
+
+  // Local fallback with lightweight corpus (~20 stories)
+  const { filterCorpus } = await import("./dimensions.js");
+  const fallback = JSON.parse(fs.readFileSync(
+    path.join(__dirname, "corpus-fallback.json"), "utf-8"
+  ));
+  const candidates = filterCorpus(dims.code, fallback, { season, emotion, lifePhase });
+  console.log(JSON.stringify({
+    candidates, count: candidates.length,
+    context: { season, emotion, lifePhase },
+    fallback: true,
+  }, null, 2));
 }
 
 // ── L1 Calendar ──
@@ -181,17 +198,6 @@ async function cmdL1Calendar() {
   const date = getArg("--date") || new Date().toISOString().slice(0, 10);
   const city = getArg("--city") || "";
   console.log(JSON.stringify(await l1Request(L1_OPENID, "fortune:calendar", { date, city }), null, 2));
-}
-
-// ── L1 Personality ──
-async function cmdL1Personality() {
-  if (!L1_OPENID) { console.log(JSON.stringify({ error: "L1 not configured" })); process.exit(1); }
-  const label = getArg("--label") || "";
-  const center = getArg("--center") || "";
-  const traits = getArg("--traits") || "";
-  console.log(JSON.stringify(await l1Request(L1_OPENID, "fortune:personality", {
-    label, center, traits: traits ? traits.split(",") : [],
-  }), null, 2));
 }
 
 // ── Discovery ──

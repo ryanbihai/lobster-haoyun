@@ -31,11 +31,11 @@
 
 **每日运势**融合二十四节气和七十二候：小满、芒种、麦秋至……用自然界的节奏隐喻你的状态变化。
 
-**周日回顾**自动复盘这一周："上次说你是布局者，这周看到你开始往执行转了"。
+**周日回顾**自动复盘这一周："上周看你在搭架构，这周开始动手探索了"。
 
 ```
 你 ⟷ Claude Code ⟷ OB L0 ⟷ L1 CalendarSvc (ECS)
-                         ⟷ L1 PersonalitySvc (ECS)
+                         ⟷ L1 DiscoverySvc (ECS)
 ```
 
 > 📖 **深度阅读**：[SKILL.md](./SKILL.md) — LLM 行为指南与完整协议文档
@@ -64,7 +64,7 @@ node src/index.js --action status
 | 能力 | 说明 |
 |------|------|
 | **深度读心** | 6 步分析引擎：场景判断 → 特征提炼 → 人格匹配 → 盲区推断 → 建议生成 → 渲染输出 |
-| **证据引用** | 7 种说服技术静默应用——每条判断后面跟具体证据，不是泛泛的"你很优秀" |
+| **证据引用** | 每条人格判断后面跟具体行为证据，不是泛泛的"你很优秀" |
 | **每日运势** | Aha Moment 引擎——节气 × 人格标签 × 近期行为，每天一条微行动建议 |
 | **周回顾** | 每周日自动触发——追踪人格洞察变化，回顾本周进展 |
 | **定时推送** | 首次读心后可一键开启每日 7:30 自动运势提醒（CC CronCreate） |
@@ -84,15 +84,15 @@ graph TB
     subgraph OB["OceanBus 网络"]
         L0[L0 消息路由]
         L1_CAL[L1 CalendarSvc<br/>节气 · 黄历 · 七十二候]
-        L1_PER[L1 PersonalitySvc<br/>人格标签丰富]
+        L1_DISC[L1 DiscoverySvc<br/>社区 Skill/公开课推荐]
     end
     CC -->|"看运势"| SKILL
     SKILL --> DATA
     SKILL -->|"5维代码+城市+日期+OpenID"| L0
     L0 --> L1_CAL
-    L0 --> L1_PER
+    L0 --> L1_DISC
     L1_CAL -->|"节气数据"| L0
-    L1_PER -->|"人格丰富"| L0
+    L1_DISC -->|"推荐列表"| L0
     L0 --> SKILL
     SKILL -->|"Markdown 运势"| CC
 ```

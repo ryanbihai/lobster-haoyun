@@ -42,25 +42,3 @@ export function initPreferences() {
   return loadPreferences();
 }
 
-/** Check if push is allowed at current time */
-export function canPush() {
-  const prefs = loadPreferences();
-  if (!prefs.push_enabled) return false;
-
-  // Quiet hours check
-  const [start, end] = prefs.push_frequency.quiet_hours.split("-");
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = end.split(":").map(Number);
-  const startMins = sh * 60 + sm;
-  const endMins = eh * 60 + em;
-
-  if (startMins <= endMins) {
-    if (currentMinutes >= startMins && currentMinutes < endMins) return false;
-  } else {
-    if (currentMinutes >= startMins || currentMinutes < endMins) return false;
-  }
-
-  return true;
-}

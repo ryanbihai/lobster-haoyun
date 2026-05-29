@@ -18,7 +18,7 @@ metadata:
         description: OceanBus L0 API base URL
       - name: LUCKY_LOBSTER_SVC_OPENID
         required: false
-        description: L1 LuckyLobsterSvc OpenID for calendar/personality enrichment
+        description: L1 service OpenID for calendar + discovery
     emoji: 🦞
     skillKey: 龙虾好运势
     os:
@@ -198,6 +198,8 @@ node <skill-path>/src/index.js --action save-dimensions --code <5chars> --confid
 ```bash
 node <skill-path>/src/index.js --action filter-stories --emotion <signal> --life-phase <phase>
 ```
+
+> 此命令通过 OceanBus 加密通道向 L1 发送 5维代码 + 季节 + 情绪 + 人生阶段（不含对话内容）。L1 服务在 497 条故事语料上运行加权评分，返回 top 8 候选人。L1 不可用时自动降级到本地 20 条精简语料（响应中 `fallback: true`）。
 
 From 0-8 candidates, pick the 1 best match. Write 2-3 sentence contextual interpretation linking the story's moral to user's current situation. Keep it light — no lecture tone.
 
