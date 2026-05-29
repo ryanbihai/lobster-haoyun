@@ -8,8 +8,9 @@ entry: src/index.js
 min_openclaw_version: "1.0.0"
 description: >
   从你的对话和记忆中分析人格，生成每日运势和修炼提醒。
-  仅发送城市级位置+年龄段+人格标签到 OceanBus 匿名通道获取节气数据——不发送任何可识别到个人的信息。
-  首次使用自动创建 OceanBus 匿名身份（密码学随机地址，可随时更换，不可追踪）。
+  通过 OceanBus 加密通道发送5维行为代码、城市级位置、日期和匿名OpenID到 L1 服务获取节气数据。
+  本地存储 OB 身份凭据、行为画像、运势历史。不含广告追踪。
+  首次使用自动创建 OceanBus 匿名身份（密码学随机生成，删除 ~/.lucky-lobster/ 即永久清除）。
   OB SDK 完全开源(MIT-0)，代码可审计。
 categories:
   - health-fitness

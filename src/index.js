@@ -51,7 +51,7 @@ async function cmdStatus() {
 
   console.log(JSON.stringify({
     status: "ok",
-    version: "0.5.1",
+    version: "0.5.2",
     consent_given: hasConsent(),
     identity: { created_this_session: created },
     profile: { exists: !!profile },
@@ -126,7 +126,6 @@ async function cmdFortune() {
       aha: ahaContext,
       preferences: {
         push_enabled: prefs.push_enabled,
-        interest_tags: prefs.interest_tags,
       },
     },
     _instructions: isFirst

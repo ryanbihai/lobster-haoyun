@@ -1,11 +1,11 @@
 ---
 name: lobster-haoyun
-version: 0.5.1
+version: 0.5.2
 description: >
   从你的对话和记忆中观察行为模式，用5个维度为你画像（工作方式/沟通模式/关注焦点/能量来源/情感倾向），
-  生成每日运势和修炼提醒。通过 OceanBus 匿名通道获取节气黄历数据（仅发送脱敏行为标签）。
-  首次使用会自动创建 OceanBus 匿名身份（可随时更换，不可追踪）。
-  包含每日推送、经典故事匹配功能。
+  生成每日运势和修炼提醒。通过 OceanBus 加密通道获取节气黄历数据（发送5维行为代码、城市级位置、日期和匿名OpenID）。
+  首次使用会自动创建 OceanBus 匿名身份（密码学随机生成，可随时删除更换）。
+  包含每日推送、经典故事匹配、社区Skill/公开课推荐功能。
 homepage: https://github.com/ryanbihai/lobster-haoyun
 metadata:
   clawdbot:
@@ -32,20 +32,22 @@ required_capabilities:
   - network
 ---
 
-# 🦞 龙虾好运势 v0.5.0
+# 🦞 龙虾好运势 v0.5.2
 
 > *说一句「看运势」，剩下的事交给小龙虾。*
 
 不问你生日星座，从你的行为模式中读懂你——你喜欢怎么工作、怎么沟通、怎么决策。用 5 个维度为你画像，匹配经典故事，生成每日运势。
 
-**能力披露**：小龙虾读取你的对话记忆和会话风格进行本地行为分析。分析后的脱敏标签（5维行为代码 + 城市级位置）通过 OceanBus 匿名通道发往 L1 服务——**对话内容、项目名、人名永不离开你的设备**。
+**能力披露**：小龙虾读取你的对话记忆和会话风格进行本地行为分析。分析后，以下数据通过 OceanBus 加密通道发往 L1 服务：5维行为代码、城市级位置（如你填写了城市）、查询日期、以及用于服务通信的 OceanBus 匿名标识符（OpenID，密码学随机生成，可随时删除更换）。L1 服务使用 OpenID 仅为关联请求与响应——不关联真实身份。Skill/MOOC 推荐功能也会发送 OpenID 用于去重。**对话内容、项目名、人名永不离开你的设备。**
 
 ## Trigger Keywords
 
-- "看运势" / "今日运势" / "我的运势"
-- "算算命" / "小龙虾帮我算算" / "认识我" / "了解我"
-- "重新认识我" — 强制重新分析
+- "小龙虾" + "看运势" / "今日运势" / "我的运势" — 需同时包含"小龙虾"和运势关键词
+- "小龙虾帮我算算" / "小龙虾看看我"
+- "重新认识我" — 强制重新分析（仅当对话中已建立小龙虾上下文时生效）
 - "fortune" / "daily fortune" / "personality reading"
+
+> 触发词设计原则：避免日常对话中意外激活。单独的"看运势"不触发——必须是"小龙虾看运势"或类似组合。
 
 ## Output Tone
 
@@ -122,16 +124,25 @@ If `data.history.is_first_time` is true AND `data.profile` does not exist → di
 🦞 第一次见面！开始之前，请你确认以下事项：
 
 **小龙虾会做什么：**
-1️⃣ 读取你的对话记忆和聊天风格，在本地分析你的行为模式
+1️⃣ 读取你的对话记忆和会话风格，在本地分析你的行为模式
    → 对话内容、项目名、人名永远不离开你的设备
-2️⃣ 分析后仅把脱敏标签（5维行为代码）和城市级位置
-   通过 OceanBus 匿名通道发往 L1 服务
-3️⃣ 创建 OceanBus 匿名身份 → 密码学随机地址，不关联真实身份
+2️⃣ 分析后，通过 OceanBus 加密通道向 L1 服务发送以下数据：
+   → 5维行为代码（如"架精事内理"）—— 不包含具体对话内容
+   → 城市级位置（如你填写了城市）—— 用于节气黄历查询
+   → 查询日期 —— 用于黄历数据
+   → OceanBus OpenID（密码学随机生成）—— L1 用于关联请求与响应
+3️⃣ 在本地 ~/.lucky-lobster/ 存储：
+   → OB 身份凭据（OpenID + API Key）—— 用于 OceanBus 通信
+   → 行为画像、运势历史、推送偏好、同意记录
+4️⃣ 每日推荐（Skill/公开课）发送 OpenID 给 L1 用于去重
+   → 不含广告追踪，仅用于社区内容推荐
 
 **小龙虾不会做：**
 ❌ 发送你的姓名、电话、邮箱、IP、GPS
 ❌ 发送你的对话记录、项目名、文件名
-❌ 让你的数据被第三方追踪或关联
+❌ 将你的数据交给第三方广告商或追踪网络
+❌ 你的 OpenID 是密码学随机生成的，不关联真实身份
+   → 删除 ~/.lucky-lobster/ 即永久清除身份，下次自动生成新身份
 
 请选择：
 👉 输入「同意」或「好」开始 → 👉 输入「不了」我会等你
@@ -193,6 +204,8 @@ From 0-8 candidates, pick the 1 best match. Write 2-3 sentence contextual interp
 If no dimensions stored yet → the command returns `{ "candidates": [], "reason": "no dimensions stored" }`. In this case, skip the story block.
 
 ### Step 4: Discovery (daily fortune only, skip on first reading)
+
+> 此步骤向 L1 发送 OpenID 用于推荐检索和去重。不含广告追踪，仅推荐社区 Skill 和公开课。
 
 ```bash
 node <skill-path>/src/index.js --action discovery

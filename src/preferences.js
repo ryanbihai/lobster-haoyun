@@ -15,8 +15,6 @@ const DEFAULTS = {
     max_per_day: 1,
     quiet_hours: "22:00-08:00",
   },
-  interest_tags: [],
-  auto_learn: true,
 };
 
 function ensureDir() {

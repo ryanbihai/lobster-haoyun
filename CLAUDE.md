@@ -89,11 +89,19 @@ A Data (local ONLY):
        ▼
   LLM local analysis → 5-dim judgment with evidence citations
 
-B Data (anonymized → L1):
-  5-char dimension code · city-level location · age range · OpenID
+B Data (encrypted → L1 via OB L0):
+  5-char dimension code · city-level location (if provided) · date
+  OpenID (cryptographically random, used for request/response correlation)
+  Discovery: OpenID for recommendation dedup (no ad tracking)
        │ via OB L0 (E2EE)
        ▼
   L1 CalendarSvc → solar term / phenology data
+  L1 DiscoverySvc → community skill/MOOC recommendations
+
+Local storage (~/.lucky-lobster/):
+  OB credentials (OpenID + API key) · profile · dimensions
+  fortune history · push preferences · consent record
+  → Delete this directory to permanently clear identity
 ```
 
 ## Environment Variables
