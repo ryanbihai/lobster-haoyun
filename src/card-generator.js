@@ -16,13 +16,16 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_SIZE = 768;
 
-// Load bundled assets (base64 JSON — ClawHub text-file compatible)
+// Load bundled assets (base64 JSON — ClawHub text-file compatible, split to stay under 10MB limit)
 const CARDS_BASE64 = JSON.parse(
   fs.readFileSync(path.join(__dirname, "assets", "cards-base64.json"), "utf-8")
 );
-const FONT_BASE64 = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "assets", "font-base64.json"), "utf-8")
-).font;
+// Font split into 3 parts to stay under ClawHub 10MB/file limit
+const FONT_BASE64 = [1, 2, 3]
+  .map(i => JSON.parse(fs.readFileSync(
+    path.join(__dirname, "assets", `font-base64-${i}.json`), "utf-8"
+  )).data)
+  .join("");
 
 // ── Public API ──
 
