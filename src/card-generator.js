@@ -14,11 +14,15 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CARDS_DIR = path.join(__dirname, "assets", "cards");
 const OUTPUT_SIZE = 768;
 
 // Cross-platform Simplified Chinese font stack
 const FONT_STACK = "'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif";
+
+// Load 24节气 background images from base64 JSON (text file, ClawHub compatible)
+const CARDS_BASE64 = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "assets", "cards-base64.json"), "utf-8")
+);
 
 // ── Public API ──
 
@@ -27,8 +31,8 @@ const FONT_STACK = "'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif
  * @returns {Promise<{card_base64: string, card_id: string}>}
  */
 export async function generateCard({ type_name, one_liner, story_title, solar_term, date }) {
-  const bgFile = path.join(CARDS_DIR, `${solar_term}.webp`);
-  if (!fs.existsSync(bgFile)) {
+  const bgBase64 = CARDS_BASE64[solar_term];
+  if (!bgBase64) {
     throw new Error(`no background for solar term: ${solar_term}`);
   }
 
@@ -39,8 +43,8 @@ export async function generateCard({ type_name, one_liner, story_title, solar_te
     .png()
     .toBuffer();
 
-  // 2. Composite background + text in one pipeline
-  const card = await sharp(bgFile)
+  // 2. Composite background (from base64) + text in one pipeline
+  const card = await sharp(Buffer.from(bgBase64, "base64"))
     .resize(OUTPUT_SIZE, OUTPUT_SIZE, { fit: "cover" })
     .composite([{ input: overlayBuf, top: 0, left: 0 }])
     .flatten({ background: "#f0f0f0" })
