@@ -154,8 +154,8 @@ function buildOverlaySvg({ type_name, one_liner, story_title, solar_term, date, 
   <rect x="${W-160}" y="36" width="112" height="40" rx="20" fill="#fff" opacity="0.25"/>
   <text x="${W-104}" y="63" font-size="22" fill="#fff" text-anchor="middle" filter="url(#s)">${esc(type_name)}</text>
   <text x="${centerX}" y="${H*0.42}" font-size="40" fill="#fff" text-anchor="middle" filter="url(#s)" font-weight="bold">${tspans}</text>
-  <text x="${centerX}" y="${H-110}" font-size="22" fill="#fff" text-anchor="middle" opacity="0.8" filter="url(#s)">📖 ${esc(story_title)}</text>
-  <text x="${centerX}" y="${H-45}" font-size="16" fill="#fff" text-anchor="middle" opacity="0.45">🦞 龙虾好运势</text>
+  <text x="${centerX}" y="${H-110}" font-size="22" fill="#fff" text-anchor="middle" opacity="0.8" filter="url(#s)">「${esc(story_title)}」</text>
+  <text x="${centerX}" y="${H-45}" font-size="16" fill="#fff" text-anchor="middle" opacity="0.45">龙虾好运势</text>
 </svg>`;
 }
 
@@ -173,5 +173,10 @@ function wrapText(text, max) {
 }
 
 function esc(s) {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/[\n\r\t]/g, "");   // strip control chars that break SVG text
 }
