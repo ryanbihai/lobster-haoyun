@@ -7,6 +7,7 @@
  *   node src/index.js --action fortune          # Full flow: calendar + fortune data for CC
  *   node src/index.js --action l1-calendar      # Call L1 CalendarSvc
  *   node src/index.js --action filter-stories [--emotion <e>] [--life-phase <p>]
+ *   node src/index.js --action generate-card --type-name <t> --one-liner <text> --story-title <s> --solar-term <term>
  */
 import { createOceanBus } from "oceanbus";
 import { getClient } from "./ob-client.js";
@@ -38,6 +39,7 @@ async function main() {
     case "filter-stories":     return await cmdFilterStories();
     case "discovery":          return await cmdDiscovery();
     case "discovery-shown":    return await cmdDiscoveryShown();
+    case "generate-card":     return await cmdGenerateCard();
     default:
       console.log(JSON.stringify({ error: `unknown action: ${action}` }));
       process.exit(1);
@@ -52,7 +54,7 @@ async function cmdStatus() {
 
   console.log(JSON.stringify({
     status: "ok",
-    version: "0.5.4",
+    version: "0.5.5",
     consent_given: hasConsent(),
     identity: { created_this_session: created },
     profile: { exists: !!profile },
@@ -217,6 +219,40 @@ async function cmdDiscoveryShown() {
   const { ob, openid } = await getClient();
   const result = await l1Request(L1_OPENID, "fortune:discovery:shown", { openid, source, slug });
   console.log(JSON.stringify(result, null, 2));
+}
+
+// ── Generate Card ──
+async function cmdGenerateCard() {
+  if (!L1_OPENID) {
+    console.log(JSON.stringify({ error: "L1 not configured — card generation requires L1 service" }));
+    process.exit(1);
+  }
+  const typeName = getArg("--type-name") || "";
+  const oneLiner = getArg("--one-liner") || "";
+  const storyTitle = getArg("--story-title") || "";
+  const solarTerm = getArg("--solar-term") || "";
+  const date = getArg("--date") || new Date().toISOString().slice(0, 10);
+
+  if (!typeName || !oneLiner || !solarTerm) {
+    console.log(JSON.stringify({
+      error: "missing required args: --type-name, --one-liner, --solar-term"
+    }));
+    process.exit(1);
+  }
+
+  try {
+    const result = await l1Request(L1_OPENID, "fortune:generate-card", {
+      type_name: typeName,
+      one_liner: oneLiner,
+      story_title: storyTitle,
+      solar_term: solarTerm,
+      date,
+    });
+    console.log(JSON.stringify(result, null, 2));
+  } catch (e) {
+    console.log(JSON.stringify({ error: e.message }));
+    process.exit(1);
+  }
 }
 
 // ── L1 Request/Response helper ──
