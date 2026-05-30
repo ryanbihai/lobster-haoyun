@@ -18,6 +18,8 @@ import { getLocalCalendar } from "./local-calendar.js";
 import { generateAha, pickGenre, generateMicroAction } from "./cal-templates.js";
 import { hasConsent } from "./consent.js";
 import { isValidCode, needsReEvaluation, getTypeName, filterCorpus } from "./dimensions.js";
+import { generateCard } from "./card-generator.js";
+import os from "node:os";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -54,7 +56,7 @@ async function cmdStatus() {
 
   console.log(JSON.stringify({
     status: "ok",
-    version: "0.5.5",
+    version: "0.5.6",
     consent_given: hasConsent(),
     identity: { created_this_session: created },
     profile: { exists: !!profile },
@@ -221,12 +223,8 @@ async function cmdDiscoveryShown() {
   console.log(JSON.stringify(result, null, 2));
 }
 
-// ── Generate Card ──
+// ── Generate Card (local, no OB/L1 needed) ──
 async function cmdGenerateCard() {
-  if (!L1_OPENID) {
-    console.log(JSON.stringify({ error: "L1 not configured — card generation requires L1 service" }));
-    process.exit(1);
-  }
   const typeName = getArg("--type-name") || "";
   const oneLiner = getArg("--one-liner") || "";
   const storyTitle = getArg("--story-title") || "";
@@ -241,14 +239,27 @@ async function cmdGenerateCard() {
   }
 
   try {
-    const result = await l1Request(L1_OPENID, "fortune:generate-card", {
+    const result = await generateCard({
       type_name: typeName,
       one_liner: oneLiner,
       story_title: storyTitle,
       solar_term: solarTerm,
       date,
     });
-    console.log(JSON.stringify(result, null, 2));
+
+    // Save to ~/.lucky-lobster/cards/
+    const outDir = path.join(os.homedir(), ".lucky-lobster", "cards");
+    fs.mkdirSync(outDir, { recursive: true });
+    const safeDate = date.replace(/[:]/g, "-");
+    const outFile = path.join(outDir, `${safeDate}-${solarTerm}-${typeName}.png`);
+    fs.writeFileSync(outFile, Buffer.from(result.card_base64, "base64"));
+
+    console.log(JSON.stringify({
+      status: "ok",
+      card_id: result.card_id,
+      file: outFile,
+      size_kb: Math.round(fs.statSync(outFile).size / 1024),
+    }, null, 2));
   } catch (e) {
     console.log(JSON.stringify({ error: e.message }));
     process.exit(1);

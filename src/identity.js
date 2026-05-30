@@ -1,6 +1,9 @@
 /**
- * OB Identity bootstrap — auto-register on first run, restore from disk thereafter.
- * Credentials stored at ~/.lucky-lobster/ob-credentials.json
+ * OB Identity bootstrap — memory keystore + manual persistence.
+ *
+ * SDK v0.14.2: file keystore auto-generates keys but sendJson fails after
+ * createIdentity(). Workaround: use memory keystore and save/restore
+ * { agent_id, api_key, openid } manually to ~/.lucky-lobster/ob-credentials.json.
  */
 import os from "node:os";
 import path from "node:path";
@@ -13,12 +16,31 @@ function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
+function loadCreds() {
+  try {
+    if (fs.existsSync(CRED_FILE)) {
+      const data = JSON.parse(fs.readFileSync(CRED_FILE, "utf-8"));
+      if (data.agent_id && data.api_key && data.openid) return data;
+    }
+  } catch (_) {}
+  return null;
+}
+
+function saveCreds(agentId, apiKey, openid) {
+  ensureDir(DATA_DIR);
+  fs.writeFileSync(CRED_FILE, JSON.stringify({
+    agent_id: agentId, api_key: apiKey, openid,
+    created_at: new Date().toISOString(),
+  }, null, 2));
+}
+
 export async function loadOrCreateIdentity(createOceanBus) {
   ensureDir(DATA_DIR);
 
-  // 1. Try restore from disk
   const saved = loadCreds();
+
   if (saved) {
+    // Restore existing identity
     const ob = await createOceanBus({
       keyStore: { type: "memory" },
       identity: {
@@ -27,45 +49,24 @@ export async function loadOrCreateIdentity(createOceanBus) {
         openid: saved.openid,
       },
     });
-    return { ob, openid: saved.openid, agentId: saved.agent_id, created: false };
+    const openid = await (typeof ob.getAddress === 'function'
+      ? ob.getAddress()
+      : ob.getOpenId());
+    return { ob, openid, agentId: saved.agent_id, created: false };
   }
 
-  // 2. No saved creds → first run → auto-register
+  // First run — create fresh identity (triggers PoW)
   const ob = await createOceanBus({ keyStore: { type: "memory" } });
-  // v0.13.x: createIdentity() / getAddress(). v0.12.x: register() / getOpenId().
-  const reg = await (typeof ob.createIdentity === 'function' ? ob.createIdentity() : ob.register());
-  const openid = await (typeof ob.getAddress === 'function' ? ob.getAddress() : ob.getOpenId());
+  const reg = await (typeof ob.createIdentity === 'function'
+    ? ob.createIdentity()
+    : ob.register());
+  const openid = await (typeof ob.getAddress === 'function'
+    ? ob.getAddress()
+    : ob.getOpenId());
 
   saveCreds(reg.agent_id, reg.api_key, openid);
 
   return { ob, openid, agentId: reg.agent_id, created: true };
-}
-
-function loadCreds() {
-  try {
-    if (fs.existsSync(CRED_FILE)) {
-      const raw = fs.readFileSync(CRED_FILE, "utf-8");
-      const data = JSON.parse(raw);
-      if (data.agent_id && data.api_key && data.openid) return data;
-    }
-  } catch (_) { /* corrupt file — re-register */ }
-  return null;
-}
-
-function saveCreds(agentId, apiKey, openid) {
-  ensureDir(DATA_DIR);
-  fs.writeFileSync(
-    CRED_FILE,
-    JSON.stringify(
-      { agent_id: agentId, api_key: apiKey, openid, created_at: new Date().toISOString() },
-      null,
-      2
-    )
-  );
-}
-
-export function getCredsPath() {
-  return CRED_FILE;
 }
 
 export function getDataDir() {
