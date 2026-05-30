@@ -1,6 +1,6 @@
 {
   "name": "lobster-haoyun",
-  "version": "0.1.0",
+  "version": "0.5.4",
   "description": "龙虾好运势 — Agent based deep personality reading, daily fortune with Chinese almanac",
   "type": "module",
   "main": "src/index.js",

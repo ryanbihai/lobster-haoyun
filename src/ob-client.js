@@ -5,7 +5,7 @@
 import { createOceanBus } from "oceanbus";
 import { loadOrCreateIdentity } from "./identity.js";
 
-const BASE_URL = process.env.OCEANBUS_URL || "https://ai-t.ihaola.com.cn/api/l0";
+const BASE_URL = process.env.OCEANBUS_URL || "https://ai.ihaola.com.cn/api/l0";
 
 let _ob = null;
 let _openid = null;

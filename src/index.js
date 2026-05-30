@@ -16,13 +16,16 @@ import { initPreferences } from "./preferences.js";
 import { getLocalCalendar } from "./local-calendar.js";
 import { generateAha, pickGenre, generateMicroAction } from "./cal-templates.js";
 import { hasConsent } from "./consent.js";
-import { isValidCode, needsReEvaluation } from "./dimensions.js";
+import { isValidCode, needsReEvaluation, getTypeName, filterCorpus } from "./dimensions.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const BASE_URL = process.env.OCEANBUS_URL || "https://ai-t.ihaola.com.cn/api/l0";
+const BASE_URL = process.env.OCEANBUS_URL || "https://ai.ihaola.com.cn/api/l0";
+// L1 CalendarSvc / StoryEngine / DiscoverySvc public OB address — NOT a secret.
+// This is the service's OpenID on the OceanBus network, like a public server address.
+// Users need it to reach L1; without it, the skill degrades to local-only mode.
 const L1_OPENID = process.env.LUCKY_LOBSTER_SVC_OPENID || "cOrquik8RuElUIUakY7FAmB3N5gdmXRR1Yg2b-GX3WeezJGSZVVV0fRd7eknILQodV9ATrpM93N4gYyP";
 
 async function main() {
@@ -49,7 +52,7 @@ async function cmdStatus() {
 
   console.log(JSON.stringify({
     status: "ok",
-    version: "0.5.3",
+    version: "0.5.4",
     consent_given: hasConsent(),
     identity: { created_this_session: created },
     profile: { exists: !!profile },
@@ -148,7 +151,6 @@ async function cmdSaveDimensions() {
   }
 
   // Auto-resolve type_name from code — 32-type table is the single source of truth
-  const { getTypeName } = await import("./dimensions.js");
   const typeName = getTypeName(code);
   saveDims({ code, type_name: typeName, confidence });
   console.log(JSON.stringify({ status: "ok", code, type_name: typeName, confidence }));
@@ -180,7 +182,6 @@ async function cmdFilterStories() {
   }
 
   // Local fallback with lightweight corpus (~20 stories)
-  const { filterCorpus } = await import("./dimensions.js");
   const fallback = JSON.parse(fs.readFileSync(
     path.join(__dirname, "corpus-fallback.json"), "utf-8"
   ));
