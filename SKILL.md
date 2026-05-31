@@ -1,11 +1,12 @@
 ---
 name: lobster-haoyun
-version: 0.5.11
+version: 0.5.12
 description: >
   从你的对话和记忆中观察行为模式，用5个维度为你画像（工作方式/沟通模式/关注焦点/能量来源/情感倾向），
-  生成每日运势和修炼提醒。通过 OceanBus 加密通道获取节气黄历数据（发送5维行为代码、城市级位置、日期和匿名OpenID）。
-  首次使用会自动创建 OceanBus 匿名身份（密码学随机生成，可随时删除更换）。
-  包含每日推送、经典故事匹配、社区Skill/公开课推荐功能。
+  生成每日运势和修炼提醒。在本地 ~/.lucky-lobster/ 存储 OB 身份凭据、行为画像、运势历史和偏好设置。
+  通过 OceanBus 加密通道向 L1 服务发送 5维行为代码、城市级位置、日期和匿名 OpenID，
+  用于获取节气黄历、匹配经典故事和推荐社区 Skill/公开课。对话内容、项目名、人名永不离开设备。
+  首次使用自动创建 OceanBus 匿名身份（密码学随机生成，删除 ~/.lucky-lobster/ 即可永久清除）。
 homepage: https://github.com/ryanbihai/lobster-haoyun
 metadata:
   clawdbot:
@@ -33,7 +34,7 @@ required_capabilities:
   - network
 ---
 
-# 🦞 龙虾好运势 v0.5.11
+# 🦞 龙虾好运势 v0.5.12
 
 > *说一句「看运势」，剩下的事交给小龙虾。*
 
